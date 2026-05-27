@@ -102,6 +102,7 @@ ORG and CONTEXT codes come from `jdx.config.yaml` and are set once at corpus ini
 
 | Document | Description |
 |---|---|
+| [docs/philosophy.md](docs/philosophy.md) | Why JDX exists and how it differs from JD |
 | [docs/quickstart.md](docs/quickstart.md) | Walkthrough: build a corpus from scratch |
 | [docs/concepts.md](docs/concepts.md) | Core concepts: addresses, manifest, config |
 | [docs/cli-reference.md](docs/cli-reference.md) | Complete CLI reference |
