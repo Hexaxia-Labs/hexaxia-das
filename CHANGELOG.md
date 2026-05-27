@@ -1,0 +1,45 @@
+# Changelog
+
+All notable changes to JDX are documented here.
+
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [0.1.0] - 2026-05-27
+
+Initial release of JDX: Johnny Decimal Extended.
+
+### Standard
+
+- JDX addressing: dotted two-digit segments (`00`, `00.01`, `00.01.01`), unlimited depth
+- Folder naming convention: `{address}-{Title-Cased-Label}/`
+- File naming convention: `{address}-[{ORG}-][{CONTEXT}-]{descriptor}[-{YYMMDD}].ext`
+- `jdx.config.yaml` schema: corpus config with `org`, `context_type`, `date_format` fields
+- `jdx.manifest.yaml` schema: corpus map with `label`, `description`, `type`, `parent`,
+  `agent_hint`, and `deprecated` fields
+- Permanence rule: addresses are never renumbered or recycled
+- Deprecation rule: retired nodes set `deprecated: true`, never deleted
+
+### CLI Tool
+
+- `jdx init` - initialize a corpus with config and manifest
+- `jdx add` - add a node to the manifest (address, label, description, optional agent_hint)
+- `jdx ls` - list manifest nodes, optionally filtered to a subtree
+- `jdx find` - search manifest by label or description (case-insensitive substring match)
+- `jdx validate` - validate corpus against naming convention (exits 1 if errors found)
+
+### Tech
+
+- Python 3.10+ required
+- Dependencies: typer 0.12+, pyyaml 6.0+
+- 51 tests, 0.21s test suite
+
+### Future (deferred to v0.2+)
+
+- Agent navigation spec
+- Document Passport integration (JDX address as passport primary key)
+- Federation (multi-corpus addressing with org prefix)
+- `jdx deprecate` command for retiring nodes via CLI
+- Reverse manifest validation (detect stale manifest entries for deleted folders)
