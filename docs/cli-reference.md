@@ -37,7 +37,7 @@ jdx init CORPUS [OPTIONS]
 |---|---|---|
 | `--org TEXT` | None | Org code prepended to filenames (e.g. `HXT`). 2-5 uppercase letters. |
 | `--context-type TEXT` | None | Secondary identifier type: `client`, `project`, `dept`, or `none` |
-| `--date-format TEXT` | `YYMMDD` | Date format for filenames. Only `YYMMDD` is supported. |
+| `--date-format TEXT` | `YYMMDD` | Date format for filenames. `YYMMDD` is the defined format. Omit or pass empty string to exclude dates. |
 | `--path PATH` | `.` | Directory to initialize the corpus in |
 
 **Exit codes:**
@@ -64,7 +64,7 @@ jdx init hexaxia-technologies --org HXT --context-type client
 # Initialize in a specific directory
 jdx init my-corpus --path /home/user/Documents/corpus
 
-# No dates in filenames
+# Exclude dates from filenames
 jdx init my-corpus --org HXT --date-format ""
 ```
 
