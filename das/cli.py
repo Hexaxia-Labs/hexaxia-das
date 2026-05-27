@@ -4,18 +4,18 @@ from pathlib import Path
 from typing import Optional
 import typer
 
-from jdx.config import (
-    JDXConfig, load_config, write_config,
+from das.config import (
+    DASConfig, load_config, write_config,
     SPEC_VERSION, CONFIG_FILENAME,
 )
-from jdx.manifest import (
-    JDXManifest, ManifestNode, load_manifest, add_node,
+from das.manifest import (
+    DASManifest, ManifestNode, load_manifest, add_node,
     write_manifest, search_nodes, infer_parent, infer_type,
     MANIFEST_FILENAME,
 )
-from jdx.validator import validate_corpus
+from das.validator import validate_corpus
 
-app = typer.Typer(help="JDX: Johnny Decimal Extended corpus tool")
+app = typer.Typer(help="Hexaxia DAS: Document Addressing Standard corpus tool")
 
 
 @app.command()
@@ -28,7 +28,7 @@ def init(
     date_format: Optional[str] = typer.Option("YYMMDD", help="Date format"),
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
-    """Initialize a new JDX corpus."""
+    """Initialize a new DAS corpus."""
     config_path = path / CONFIG_FILENAME
     if config_path.exists():
         typer.echo(
@@ -38,7 +38,7 @@ def init(
         )
         raise typer.Exit(1)
 
-    config = JDXConfig(
+    config = DASConfig(
         version=SPEC_VERSION,
         corpus=corpus,
         initialized=str(date.today()),
@@ -48,21 +48,21 @@ def init(
         context_type=context_type,
         date_format=date_format,
     )
-    manifest = JDXManifest(
+    manifest = DASManifest(
         version=SPEC_VERSION,
         corpus=corpus,
         updated=str(date.today()),
     )
     write_config(path, config)
     write_manifest(path / MANIFEST_FILENAME, manifest)
-    typer.echo(f"Initialized JDX corpus '{corpus}' at {path}")
+    typer.echo(f"Initialized DAS corpus '{corpus}' at {path}")
     typer.echo(f"  {CONFIG_FILENAME}")
     typer.echo(f"  {MANIFEST_FILENAME}")
 
 
 @app.command()
 def add(
-    address: str = typer.Argument(..., help="JDX address (e.g. 00.01)"),
+    address: str = typer.Argument(..., help="DAS address (e.g. 00.01)"),
     label: str = typer.Argument(..., help="Folder label (e.g. Business-Registration)"),
     description: str = typer.Argument(..., help="One-sentence description"),
     agent_hint: Optional[str] = typer.Option(None, help="Agent routing hint"),
@@ -72,7 +72,7 @@ def add(
     try:
         config = load_config(path)
     except FileNotFoundError:
-        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        typer.echo(f"Error: no DAS corpus found at {path}. Run 'das init' first.", err=True)
         raise typer.Exit(1)
     manifest_path = path / config.manifest
     try:
@@ -107,7 +107,7 @@ def ls(
     try:
         config = load_config(path)
     except FileNotFoundError:
-        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        typer.echo(f"Error: no DAS corpus found at {path}. Run 'das init' first.", err=True)
         raise typer.Exit(1)
     try:
         manifest = load_manifest(path / config.manifest)
@@ -137,7 +137,7 @@ def find(
     try:
         config = load_config(path)
     except FileNotFoundError:
-        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        typer.echo(f"Error: no DAS corpus found at {path}. Run 'das init' first.", err=True)
         raise typer.Exit(1)
     try:
         manifest = load_manifest(path / config.manifest)
@@ -160,7 +160,7 @@ def validate(
     try:
         errors = validate_corpus(path)
     except FileNotFoundError:
-        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        typer.echo(f"Error: no DAS corpus found at {path}. Run 'das init' first.", err=True)
         raise typer.Exit(1)
     if not errors:
         typer.echo("Corpus is valid.")

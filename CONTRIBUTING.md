@@ -1,4 +1,4 @@
-# Contributing to JDX
+# Contributing to Hexaxia DAS
 
 ---
 
@@ -14,8 +14,8 @@
 Clone the repo and create a virtual environment:
 
 ```bash
-git clone https://github.com/Hexaxia-Labs/jdx.git
-cd jdx
+git clone https://github.com/Hexaxia-Labs/hexaxia-das.git
+cd hexaxia-das
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 ```
@@ -23,7 +23,7 @@ python3 -m venv .venv
 Verify the install:
 
 ```bash
-.venv/bin/jdx --help
+.venv/bin/das --help
 .venv/bin/pytest
 ```
 
@@ -54,11 +54,11 @@ Run a single test file:
 ## Project Structure
 
 ```
-jdx/
-  jdx/
+hexaxia-das/
+  das/
     cli.py        - typer commands (init, add, ls, find, validate)
-    config.py     - JDXConfig dataclass, load_config, write_config
-    manifest.py   - JDXManifest, ManifestNode, manifest operations
+    config.py     - DASConfig dataclass, load_config, write_config
+    manifest.py   - DASManifest, ManifestNode, manifest operations
     validator.py  - validate_corpus, ValidationError
   tests/
     conftest.py   - corpus fixture (tmp_path with initialized corpus)
@@ -67,7 +67,7 @@ jdx/
     test_validator.py
     test_cli.py
   docs/
-    spec.md           - JDX design specification
+    spec.md           - Hexaxia DAS design specification
     concepts.md       - core concepts reference
     quickstart.md     - walkthrough guide
     cli-reference.md  - complete command reference
@@ -87,11 +87,11 @@ jdx/
 
 ## Adding a Command
 
-1. Add the command function to `jdx/cli.py` decorated with `@app.command()`
+1. Add the command function to `das/cli.py` decorated with `@app.command()`
 2. Add a test in `tests/test_cli.py` using the `corpus` fixture from `conftest.py`
 3. Document the command in `docs/cli-reference.md`
 
-The `corpus` fixture gives you a `tmp_path`-based initialized JDX corpus and a
+The `corpus` fixture gives you a `tmp_path`-based initialized DAS corpus and a
 `CliRunner` for invoking commands without a real subprocess.
 
 ---
@@ -109,7 +109,7 @@ The `corpus` fixture gives you a `tmp_path`-based initialized JDX corpus and a
 ## Reporting Issues
 
 Open an issue on GitHub. Include:
-- JDX version (`jdx --version` once implemented, or the git SHA)
+- Hexaxia DAS version (`das --version` once implemented, or the git SHA)
 - Python version (`python3 --version`)
 - The command you ran
 - The error output

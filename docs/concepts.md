@@ -1,12 +1,12 @@
-# JDX Concepts
+# Hexaxia DAS Concepts
 
-Core concepts for understanding the JDX standard.
+Core concepts for understanding the DAS standard.
 
 ---
 
-## The JDX Address
+## The Hexaxia DAS Address
 
-Every node in a JDX corpus - every folder and every file - has a **JDX address**: a dotted
+Every node in a DAS corpus - every folder and every file - has a **DAS address**: a dotted
 sequence of two-digit numeric segments that uniquely identifies its position in the hierarchy.
 
 ```
@@ -20,10 +20,10 @@ Rules:
 - Each segment is always two digits: `00` through `99`
 - Segments are separated by dots
 - Depth is unlimited in theory; 4 levels covers most organizational needs
-- **Addresses are permanent.** Once assigned, a JDX address never changes, never gets reused,
+- **Addresses are permanent.** Once assigned, a DAS address never changes, never gets reused,
   and never gets renumbered. If a node is retired, its address is archived - not recycled.
 
-Think of a JDX address as an IP address for a document or folder. It is stable, machine-parseable,
+Think of a DAS address as an IP address for a document or folder. It is stable, machine-parseable,
 and unambiguous regardless of what surrounds it.
 
 ---
@@ -64,11 +64,11 @@ Examples:
 
 ## The Corpus
 
-A **corpus** is a JDX-organized document collection. Every corpus has:
+A **corpus** is a Hexaxia DAS-organized document collection. Every corpus has:
 
 - A **root directory** where all documents live
-- A **config file** (`jdx.config.yaml`) that defines the naming schema for the corpus
-- A **manifest** (`jdx.manifest.yaml`) that maps every address to its label and description
+- A **config file** (`das.config.yaml`) that defines the naming schema for the corpus
+- A **manifest** (`das.manifest.yaml`) that maps every address to its label and description
 
 A corpus can be a company's full document archive, a project's working files, a client engagement
 folder, or any bounded collection that needs structured, permanent addressing.
@@ -86,14 +86,14 @@ Nodes are classified by their depth in the hierarchy:
 | 3 (e.g. `00.01.01`) | subcategory | State-Filings, Federal-Filings |
 | 4+ (e.g. `00.01.01.01`) | context | High-specificity nodes, use deliberately |
 
-These types are inferred automatically from address depth when you run `jdx add`. You do not
+These types are inferred automatically from address depth when you run `das add`. You do not
 set them manually.
 
 ---
 
-## jdx.config.yaml
+## das.config.yaml
 
-The **corpus config** lives at the root of every JDX corpus. It declares the naming schema
+The **corpus config** lives at the root of every DAS corpus. It declares the naming schema
 for the entire corpus. It is written once at corpus initialization and treated as **immutable**.
 
 ```yaml
@@ -104,14 +104,14 @@ org: HXT
 context_type: client
 date_format: YYMMDD
 address_separator: "."
-manifest: jdx.manifest.yaml
+manifest: das.manifest.yaml
 ```
 
 Fields:
 
 | Field | Required | Description |
 |---|---|---|
-| `version` | Yes | JDX spec version |
+| `version` | Yes | Hexaxia DAS spec version |
 | `corpus` | Yes | Unique slug for this corpus |
 | `initialized` | Yes | Date the corpus was created (YYYY-MM-DD) |
 | `org` | No | Org code prepended to filenames (e.g. `HXT`) |
@@ -122,11 +122,11 @@ Fields:
 
 **Changing this file after initialization is a breaking change.** Every filename and manifest
 entry depends on the naming format being stable. If you must change it, rename all affected files,
-rebuild the manifest, and document the migration in `jdx.migration.md`.
+rebuild the manifest, and document the migration in `das.migration.md`.
 
 ---
 
-## jdx.manifest.yaml
+## das.manifest.yaml
 
 The **manifest** is the corpus map. It is a complete registry of every address in the corpus -
 its label, description, type, parent, and optional metadata.
@@ -167,7 +167,7 @@ folders. Never delete a node entry - set `deprecated: true` instead.
 
 ## Permanence and Deprecation
 
-The JDX address is permanent. Once assigned, it never changes and is never recycled.
+The DAS address is permanent. Once assigned, it never changes and is never recycled.
 
 When a node is no longer active:
 1. Set `deprecated: true` in the manifest
@@ -184,7 +184,7 @@ When a node is no longer active:
   deprecated: true
 ```
 
-This rule is what makes JDX addresses safe to reference from external systems - a document
+This rule is what makes DAS addresses safe to reference from external systems - a document
 passport, a database record, or an agent's memory can reference `02.03` and know it will
 always resolve to the same thing, even after the client relationship ends.
 

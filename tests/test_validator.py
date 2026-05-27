@@ -1,11 +1,11 @@
 import pytest
 from pathlib import Path
-from jdx.config import load_config
-from jdx.manifest import (
+from das.config import load_config
+from das.manifest import (
     ManifestNode, load_manifest, add_node, write_manifest,
     infer_parent, infer_type,
 )
-from jdx.validator import validate_corpus
+from das.validator import validate_corpus
 
 
 def _register(corpus, address, label, description):
@@ -46,7 +46,7 @@ def test_file_with_parent_address_is_valid(corpus):
 def test_folder_without_address_is_invalid(corpus):
     (corpus / "Admin").mkdir()
     errors = validate_corpus(corpus)
-    assert any("No JDX address prefix" in e.message for e in errors)
+    assert any("No address prefix" in e.message for e in errors)
 
 
 def test_folder_not_in_manifest_is_invalid(corpus):

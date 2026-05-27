@@ -1,28 +1,28 @@
-# JDX CLI Reference
+# Hexaxia DAS CLI Reference
 
-Complete reference for the `jdx` command-line tool.
+Complete reference for the `das` command-line tool.
 
 ---
 
 ## Per-Command Options
 
-Every command accepts a `--path` option to specify a corpus root directory other than the current directory. Pass it to the specific subcommand, not to `jdx` itself.
+Every command accepts a `--path` option to specify a corpus root directory other than the current directory. Pass it to the specific subcommand, not to `das` itself.
 
 ```bash
-jdx --help
-jdx <command> --help
+das --help
+das <command> --help
 ```
 
 ---
 
-## jdx init
+## das init
 
-Initialize a new JDX corpus in the specified directory.
+Initialize a new DAS corpus in the specified directory.
 
 **Usage:**
 
 ```
-jdx init CORPUS [OPTIONS]
+das init CORPUS [OPTIONS]
 ```
 
 **Arguments:**
@@ -45,46 +45,46 @@ jdx init CORPUS [OPTIONS]
 | Code | Condition |
 |---|---|
 | 0 | Corpus initialized successfully |
-| 1 | `jdx.config.yaml` already exists (corpus already initialized) |
+| 1 | `das.config.yaml` already exists (corpus already initialized) |
 
 **What it creates:**
 
-- `jdx.config.yaml` - corpus configuration (immutable after this point)
-- `jdx.manifest.yaml` - empty corpus manifest
+- `das.config.yaml` - corpus configuration (immutable after this point)
+- `das.manifest.yaml` - empty corpus manifest
 
 **Examples:**
 
 ```bash
 # Minimal corpus (no org code, no context type)
-jdx init my-corpus
+das init my-corpus
 
 # Full config with org and client context
-jdx init hexaxia-technologies --org HXT --context-type client
+das init hexaxia-technologies --org HXT --context-type client
 
 # Initialize in a specific directory
-jdx init my-corpus --path /home/user/Documents/corpus
+das init my-corpus --path /home/user/Documents/corpus
 
 # Exclude dates from filenames
-jdx init my-corpus --org HXT --date-format ""
+das init my-corpus --org HXT --date-format ""
 ```
 
 ---
 
-## jdx add
+## das add
 
 Add a node to the corpus manifest.
 
 **Usage:**
 
 ```
-jdx add ADDRESS LABEL DESCRIPTION [OPTIONS]
+das add ADDRESS LABEL DESCRIPTION [OPTIONS]
 ```
 
 **Arguments:**
 
 | Argument | Required | Description |
 |---|---|---|
-| `ADDRESS` | Yes | JDX address (e.g. `00`, `00.01`, `00.01.01`) |
+| `ADDRESS` | Yes | DAS address (e.g. `00`, `00.01`, `00.01.01`) |
 | `LABEL` | Yes | Human-readable folder label, Title-Cased and hyphenated (e.g. `Business-Registration`) |
 | `DESCRIPTION` | Yes | One-sentence description of what belongs here |
 
@@ -113,29 +113,29 @@ jdx add ADDRESS LABEL DESCRIPTION [OPTIONS]
 
 ```bash
 # Add a top-level area
-jdx add 00 Admin "Company governance - legal, compliance, registrations"
+das add 00 Admin "Company governance - legal, compliance, registrations"
 
 # Add a category
-jdx add 00.01 Business-Registration "Incorporation certificates and filings"
+das add 00.01 Business-Registration "Incorporation certificates and filings"
 
 # Add a subcategory with an agent hint
-jdx add 02.01 ULS "United Life Services - Indianapolis, IN" \
+das add 02.01 ULS "United Life Services - Indianapolis, IN" \
   --agent-hint "Primary MSP client. Contracts in 02.01.01, projects in 02.01.03."
 
 # Add in a non-current-directory corpus
-jdx add 04 Marketing "Brand, campaigns, content" --path /mnt/d/docs/corpus
+das add 04 Marketing "Brand, campaigns, content" --path /mnt/d/docs/corpus
 ```
 
 ---
 
-## jdx ls
+## das ls
 
 List nodes in the corpus manifest.
 
 **Usage:**
 
 ```
-jdx ls [ADDRESS] [OPTIONS]
+das ls [ADDRESS] [OPTIONS]
 ```
 
 **Arguments:**
@@ -169,25 +169,25 @@ Deprecated nodes are shown with a `[deprecated]` suffix.
 
 ```bash
 # List all nodes
-jdx ls
+das ls
 
 # List node 02 and its direct children
-jdx ls 02
+das ls 02
 
 # List in a specific corpus
-jdx ls --path /mnt/d/docs/corpus
+das ls --path /mnt/d/docs/corpus
 ```
 
 ---
 
-## jdx find
+## das find
 
 Search the manifest by label or description.
 
 **Usage:**
 
 ```
-jdx find QUERY [OPTIONS]
+das find QUERY [OPTIONS]
 ```
 
 **Arguments:**
@@ -218,25 +218,25 @@ jdx find QUERY [OPTIONS]
 
 ```bash
 # Find anything related to "client"
-jdx find client
+das find client
 
 # Find anything with "invoice" in the label or description
-jdx find invoice
+das find invoice
 
 # Search in a specific corpus
-jdx find compliance --path /mnt/d/docs/corpus
+das find compliance --path /mnt/d/docs/corpus
 ```
 
 ---
 
-## jdx validate
+## das validate
 
 Validate corpus naming convention compliance.
 
 **Usage:**
 
 ```
-jdx validate [OPTIONS]
+das validate [OPTIONS]
 ```
 
 **Options:**
@@ -256,15 +256,15 @@ jdx validate [OPTIONS]
 
 | Check | Rule |
 |---|---|
-| Address prefix | Every folder and file name must start with a valid JDX address |
+| Address prefix | Every folder and file name must start with a valid DAS address |
 | Address format | Address segments must be exactly two digits (`00`-`99`) |
 | Folder casing | Folder label must start with an uppercase letter (`00-Admin`, not `00-admin`) |
-| Manifest registration | Every folder's address must be registered in `jdx.manifest.yaml` |
+| Manifest registration | Every folder's address must be registered in `das.manifest.yaml` |
 | File-to-folder match | A file's address must match its parent folder's address |
 
 **Skipped items:**
 
-The validator skips: `jdx.config.yaml`, `jdx.manifest.yaml`, `jdx.migration.md`, `README.md`,
+The validator skips: `das.config.yaml`, `das.manifest.yaml`, `das.migration.md`, `README.md`,
 hidden files and directories (starting with `.`), and any items inside hidden directories.
 
 **Example output (valid corpus):**
@@ -278,7 +278,7 @@ Corpus is valid.
 ```
 3 validation error(s):
   02-clients: Folder label must be Title-Cased and hyphenated (e.g. '00-Admin')
-  02-Clients/02.01-Northstar-Logistics/invoice.pdf: No JDX address prefix found
+  02-Clients/02.01-Northstar-Logistics/invoice.pdf: No DAS address prefix found
   02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01-ATL-NSL-msa.pdf: File address '02.01' does not match parent folder address '02.01.01'
 ```
 
@@ -286,11 +286,11 @@ Corpus is valid.
 
 ```bash
 # Validate current directory corpus
-jdx validate
+das validate
 
 # Validate a specific corpus
-jdx validate --path /mnt/d/docs/corpus
+das validate --path /mnt/d/docs/corpus
 
 # Use in CI - non-zero exit if invalid
-jdx validate || echo "Corpus has naming violations"
+das validate || echo "Corpus has naming violations"
 ```

@@ -1,6 +1,6 @@
-# Quickstart: Building Your First JDX Corpus
+# Quickstart: Building Your First Hexaxia DAS Corpus
 
-This guide walks you through initializing a JDX corpus, building out an address tree,
+This guide walks you through initializing a DAS corpus, building out an address tree,
 naming files correctly, and validating your corpus.
 
 We'll use a fictional company called **Atlas Technologies** as the example. Atlas has:
@@ -14,19 +14,19 @@ We'll use a fictional company called **Atlas Technologies** as the example. Atla
 
 ## Prerequisites
 
-Install JDX:
+Install Hexaxia DAS:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -e ~/Projects/jdx
+.venv/bin/pip install -e ~/Projects/hexaxia-das
 # or once published to PyPI:
-# .venv/bin/pip install jdx
+# .venv/bin/pip install hexaxia-das
 ```
 
 Verify the install:
 
 ```bash
-.venv/bin/jdx --help
+.venv/bin/das --help
 ```
 
 ---
@@ -38,18 +38,18 @@ Create a directory for your corpus and initialize it:
 ```bash
 mkdir ~/Documents/atlas-corpus
 cd ~/Documents/atlas-corpus
-jdx init atlas-technologies --org ATL --context-type client --date-format YYMMDD
+das init atlas-technologies --org ATL --context-type client --date-format YYMMDD
 ```
 
 This creates two files:
 
 ```
 atlas-corpus/
-  jdx.config.yaml
-  jdx.manifest.yaml
+  das.config.yaml
+  das.manifest.yaml
 ```
 
-`jdx.config.yaml` defines the naming schema. It is permanent - do not edit it after
+`das.config.yaml` defines the naming schema. It is permanent - do not edit it after
 documents exist. Verify it looks right:
 
 ```yaml
@@ -57,7 +57,7 @@ version: '1.0'
 corpus: atlas-technologies
 initialized: 2026-05-27
 address_separator: .
-manifest: jdx.manifest.yaml
+manifest: das.manifest.yaml
 org: ATL
 context_type: client
 date_format: YYMMDD
@@ -72,34 +72,34 @@ Add nodes parent-first. A node cannot be added before its parent exists.
 **Add the top-level areas:**
 
 ```bash
-jdx add 00 Admin "Company governance - legal, compliance, registrations"
-jdx add 01 Finance "Accounting, invoicing, taxes, banking"
-jdx add 02 Clients "One subfolder per active client engagement"
-jdx add 03 HR "Hiring, onboarding, policies, team"
-jdx add 04 Marketing "Brand, campaigns, content, SEO"
+das add 00 Admin "Company governance - legal, compliance, registrations"
+das add 01 Finance "Accounting, invoicing, taxes, banking"
+das add 02 Clients "One subfolder per active client engagement"
+das add 03 HR "Hiring, onboarding, policies, team"
+das add 04 Marketing "Brand, campaigns, content, SEO"
 ```
 
 **Add categories under Admin:**
 
 ```bash
-jdx add 00.01 Business-Registration "Incorporation certificates, jurisdiction filings"
-jdx add 00.02 Insurance "Business liability and professional indemnity policies"
-jdx add 00.03 Compliance "Regulatory compliance documents and audits"
+das add 00.01 Business-Registration "Incorporation certificates, jurisdiction filings"
+das add 00.02 Insurance "Business liability and professional indemnity policies"
+das add 00.03 Compliance "Regulatory compliance documents and audits"
 ```
 
 **Add categories under Clients:**
 
 ```bash
-jdx add 02.01 Northstar-Logistics "Northstar Logistics - Chicago, IL"
-jdx add 02.02 Pinnacle-Health "Pinnacle Health Systems - Indianapolis, IN"
+das add 02.01 Northstar-Logistics "Northstar Logistics - Chicago, IL"
+das add 02.02 Pinnacle-Health "Pinnacle Health Systems - Indianapolis, IN"
 ```
 
 **Add subcategories under 02.01:**
 
 ```bash
-jdx add 02.01.01 Contracts "MSA, SOWs, amendments"
-jdx add 02.01.02 Correspondence "Emails, meeting notes, call logs"
-jdx add 02.01.03 Projects "Active project deliverables"
+das add 02.01.01 Contracts "MSA, SOWs, amendments"
+das add 02.01.02 Correspondence "Emails, meeting notes, call logs"
+das add 02.01.03 Projects "Active project deliverables"
 ```
 
 ---
@@ -109,7 +109,7 @@ jdx add 02.01.03 Projects "Active project deliverables"
 List all nodes to see your address tree:
 
 ```bash
-jdx ls
+das ls
 ```
 
 Output:
@@ -133,20 +133,20 @@ Output:
 List just Clients and its direct children:
 
 ```bash
-jdx ls 02
+das ls 02
 ```
 
 Search for anything related to contracts:
 
 ```bash
-jdx find contract
+das find contract
 ```
 
 ---
 
 ## Step 4: Create the Folder Structure
 
-Create folders using the JDX naming convention: `{address}-{Title-Cased-Label}/`
+Create folders using the Hexaxia DAS naming convention: `{address}-{Title-Cased-Label}/`
 
 ```bash
 mkdir -p 00-Admin/00.01-Business-Registration
@@ -192,7 +192,7 @@ Naming breakdown for `02.01.01-ATL-NSL-msa-260301.pdf`:
 | Component | Value | Source |
 |---|---|---|
 | Address | `02.01.01` | The containing folder's address |
-| ORG | `ATL` | `org` field in jdx.config.yaml |
+| ORG | `ATL` | `org` field in das.config.yaml |
 | CONTEXT | `NSL` | Short code for the client (Northstar Logistics) |
 | Descriptor | `msa` | What the document is |
 | Date | `260301` | YYMMDD - March 1, 2026 |
@@ -207,7 +207,7 @@ internal documents that do not belong to a specific client, project, or departme
 Run the validator to check that all folders and files follow the naming convention:
 
 ```bash
-jdx validate
+das validate
 ```
 
 If everything is clean:
@@ -221,10 +221,10 @@ If there are issues, the validator tells you what is wrong and where:
 ```
 2 validation error(s):
   02-Clients/02.01-northstar-logistics: Folder label must be Title-Cased and hyphenated (e.g. '00-Admin')
-  02-Clients/02.01-Northstar-Logistics/invoice.pdf: No JDX address prefix found
+  02-Clients/02.01-Northstar-Logistics/invoice.pdf: No DAS address prefix found
 ```
 
-Fix the issues and run `jdx validate` again until it exits clean.
+Fix the issues and run `das validate` again until it exits clean.
 
 ---
 
@@ -233,10 +233,10 @@ Fix the issues and run `jdx validate` again until it exits clean.
 When a client engagement ends, retire the node - do not delete it or reuse the address.
 
 ```bash
-# Edit jdx.manifest.yaml directly to add deprecated: true
+# Edit das.manifest.yaml directly to add deprecated: true
 ```
 
-In `jdx.manifest.yaml`, find the node and add the flag:
+In `das.manifest.yaml`, find the node and add the flag:
 
 ```yaml
 "02.02":
@@ -254,6 +254,6 @@ never be reused. The folder and its contents can be archived, but the manifest e
 
 ## Next Steps
 
-- See [docs/concepts.md](concepts.md) for a deeper explanation of JDX addressing and the manifest
+- See [docs/concepts.md](concepts.md) for a deeper explanation of DAS addressing and the manifest
 - See [docs/cli-reference.md](cli-reference.md) for the complete command reference
-- See [docs/spec.md](spec.md) for the full JDX design specification
+- See [docs/spec.md](spec.md) for the full Hexaxia DAS design specification

@@ -1,4 +1,4 @@
-# JDX: Johnny Decimal Extended
+# Hexaxia DAS: Document Addressing Standard
 ## Design Specification v0.1
 
 **Date:** 2026-05-27
@@ -9,9 +9,9 @@
 
 ## 1. Overview
 
-JDX (Johnny Decimal Extended) is a document organization standard designed for large, growing corpora where the original Johnny.Decimal methodology reaches its structural limits. It preserves JD's most important idea - **numbers are permanent** - and builds a complete addressing system around it: deeper hierarchy, a machine-readable manifest, a corpus-level configuration schema, and a naming convention that is both human-readable and agent-navigable.
+Hexaxia DAS (Document Addressing Standard) is a document organization standard designed for large, growing corpora where the original Johnny.Decimal methodology reaches its structural limits. It preserves JD's most important idea - **numbers are permanent** - and builds a complete addressing system around it: deeper hierarchy, a machine-readable manifest, a corpus-level configuration schema, and a naming convention that is both human-readable and agent-navigable.
 
-JDX is intended as a POC and foundation for a broader ecosystem that will eventually include AI agent navigation and document identity (passports). The standard is designed with those futures in mind but does not require them to be useful today.
+Hexaxia DAS is intended as a POC and foundation for a broader ecosystem that will eventually include AI agent navigation and document identity (passports). The standard is designed with those futures in mind but does not require them to be useful today.
 
 ---
 
@@ -26,15 +26,15 @@ At organizational scale the constraint becomes a ceiling:
 - Standard JD has no machine-readable schema. An agent navigating a JD corpus has no way to understand the address space without traversing every folder in the tree.
 - JD provides no standard for how filenames relate to their location in the hierarchy.
 
-JDX addresses all of these. It is not a replacement for personal JD use - it is an extension for when JD's constraints are the problem, not the solution.
+DAS addresses all of these. It is not a replacement for personal JD use - it is an extension for when JD's constraints are the problem, not the solution.
 
 ---
 
 ## 3. Core Concepts
 
-### 3.1 The JDX Address
+### 3.1 The Hexaxia DAS Address
 
-Every node in a JDX corpus - every folder and every file - has a **JDX address**: a dotted sequence of two-digit numeric segments that uniquely identifies its position in the hierarchy.
+Every node in a DAS corpus - every folder and every file - has a **DAS address**: a dotted sequence of two-digit numeric segments that uniquely identifies its position in the hierarchy.
 
 ```
 00          ← first level (area)
@@ -47,7 +47,7 @@ Rules:
 - Each segment is always two digits: `00`–`99`
 - Segments are separated by dots
 - Depth is unlimited in theory; 4 levels covers most organizational needs
-- **Addresses are permanent.** Once assigned, a JDX address never changes, never gets reused, and never gets renumbered. If a node is retired, its address is archived - not recycled.
+- **Addresses are permanent.** Once assigned, a DAS address never changes, never gets reused, and never gets renumbered. If a node is retired, its address is archived - not recycled.
 
 ### 3.2 The Human Label
 
@@ -76,10 +76,10 @@ Examples:
 
 ## 4. The Corpus Configuration
 
-Each JDX corpus has a single configuration file at its root: `jdx.config.yaml`. This file declares the naming schema for the entire corpus. It is written once at corpus initialization and treated as **immutable**.
+Each DAS corpus has a single configuration file at its root: `das.config.yaml`. This file declares the naming schema for the entire corpus. It is written once at corpus initialization and treated as **immutable**.
 
 ```yaml
-# jdx.config.yaml
+# das.config.yaml
 version: "1.0"
 corpus: hexaxia-technologies
 initialized: 2026-05-27
@@ -87,14 +87,14 @@ org: HXT                    # optional - omit to exclude from filenames
 context_type: client        # "client" | "project" | "dept" | "none"
 date_format: YYMMDD         # optional - omit to exclude dates from filenames
 address_separator: "."      # always "." - reserved, do not change
-manifest: jdx.manifest.yaml
+manifest: das.manifest.yaml
 ```
 
 ### 4.1 Configuration Fields
 
 | Field | Required | Description |
 |---|---|---|
-| `version` | Yes | JDX spec version this corpus was initialized against |
+| `version` | Yes | Hexaxia DAS spec version this corpus was initialized against |
 | `corpus` | Yes | Unique slug identifying this document corpus |
 | `initialized` | Yes | Date the corpus was created (YYYY-MM-DD) |
 | `org` | No | Org code prepended to filenames (e.g. `HXT`). Omit to exclude. |
@@ -105,12 +105,12 @@ manifest: jdx.manifest.yaml
 
 ### 4.2 Schema Immutability
 
-**Changing `jdx.config.yaml` after corpus initialization is a breaking change.**
+**Changing `das.config.yaml` after corpus initialization is a breaking change.**
 
 Every filename, every manifest entry, every index, and every agent or tool that operates on the corpus depends on the naming format being stable. Changing `org`, `context_type`, or `date_format` after files exist means every filename in the corpus is now wrong relative to the schema.
 
 If a breaking change is unavoidable:
-1. Document the change and the reason in a `jdx.migration.md` file at the corpus root
+1. Document the change and the reason in a `das.migration.md` file at the corpus root
 2. Rename all affected files before updating the config
 3. Rebuild the manifest
 4. Notify any agents, indexes, or integrations that reference the corpus
@@ -185,10 +185,10 @@ Examples:
 
 ## 6. The Manifest
 
-The `jdx.manifest.yaml` file lives at the corpus root alongside `jdx.config.yaml`. It is the **corpus map** - a complete registry of every address in the corpus, its label, its description, its parent, and optional metadata.
+The `das.manifest.yaml` file lives at the corpus root alongside `das.config.yaml`. It is the **corpus map** - a complete registry of every address in the corpus, its label, its description, its parent, and optional metadata.
 
 ```yaml
-# jdx.manifest.yaml
+# das.manifest.yaml
 version: "1.0"
 corpus: hexaxia-technologies
 updated: 2026-05-27
@@ -248,7 +248,7 @@ nodes:
 | `label` | Yes | Human-readable name for this node |
 | `description` | Yes | One-sentence description of what belongs here |
 | `type` | Yes | `area`, `category`, `subcategory`, `context`, `file` |
-| `parent` | No (root nodes only) | JDX address of the parent node |
+| `parent` | No (root nodes only) | DAS address of the parent node |
 | `agent_hint` | No | Optional routing guidance for agents - what's here, what to look for |
 | `deprecated` | No | If `true`, this address is retired. Never reuse it. |
 
@@ -265,7 +265,7 @@ The manifest can be maintained manually or by tooling. In either case, the manif
 
 ## 7. Depth Model
 
-JDX imposes no hard depth limit. A corpus can go as many levels deep as the content genuinely requires. However, depth should be **earned**, not assumed.
+Hexaxia DAS imposes no hard depth limit. A corpus can go as many levels deep as the content genuinely requires. However, depth should be **earned**, not assumed.
 
 ### 7.1 When to Add a Level
 
@@ -295,7 +295,7 @@ Level 5+                   ← Scrutinize carefully - is the area above too broa
 
 ### 7.4 Path Length Considerations
 
-JDX addresses are compact - a 4-level address (`04.03.02.01`) is only 14 characters. The practical path length concern comes from combining a long base corpus path with deep nesting and verbose descriptors.
+DAS addresses are compact - a 4-level address (`04.03.02.01`) is only 14 characters. The practical path length concern comes from combining a long base corpus path with deep nesting and verbose descriptors.
 
 | Platform | Path limit | Risk level |
 |---|---|---|
@@ -314,29 +314,29 @@ The 4-level soft cap naturally keeps most paths well under the 260-character lim
 
 ---
 
-## 8. JDX vs Johnny.Decimal - The Divergence
+## 8. Hexaxia DAS vs Johnny.Decimal - The Divergence
 
-JDX inherits JD's core principle and diverges deliberately everywhere else.
+Hexaxia DAS inherits JD's core principle and diverges deliberately everywhere else.
 
-| Dimension | Johnny.Decimal | JDX |
+| Dimension | Johnny.Decimal | Hexaxia DAS |
 |---|---|---|
 | **Depth** | 2 levels maximum (by design) | Unlimited, guided by soft caps |
 | **Address range** | 10 areas, 10 categories per area | 00–99 at every level |
 | **Filename role** | Human navigation only | Address is a machine-parseable coordinate |
-| **Schema artifact** | None - convention only | `jdx.config.yaml` + `jdx.manifest.yaml` |
+| **Schema artifact** | None - convention only | `das.config.yaml` + `das.manifest.yaml` |
 | **Naming convention** | Informal, per-user | Formally defined, corpus-configured, immutable |
 | **Agent-ready** | No | Yes - manifest provides full corpus map in one read |
 | **Multi-entity** | No | Deferred but designed for (org prefix, federation path) |
 | **Immutability scope** | Numbers permanent | Numbers + full naming schema permanent |
 
-JD's two-level limit is not a flaw - for personal use it is exactly right. JDX diverges because organizational corpora have different requirements: more depth, more structure, machine-readable schema, and eventual agent participation. JDX keeps the one principle that matters at any scale - **numbers are permanent** - and builds a complete standard around it.
+JD's two-level limit is not a flaw - for personal use it is exactly right. Hexaxia DAS diverges because organizational corpora have different requirements: more depth, more structure, machine-readable schema, and eventual agent participation. Hexaxia DAS keeps the one principle that matters at any scale - **numbers are permanent** - and builds a complete standard around it.
 
 ---
 
 ## 9. Rules Summary
 
 **Addresses**
-1. Every node gets a JDX address. No exceptions.
+1. Every node gets a DAS address. No exceptions.
 2. Addresses are two-digit segments separated by dots: `00`, `00.01`, `00.01.01`.
 3. Addresses are permanent. Never renumber. Never reuse a retired address.
 4. Depth is unlimited. 4 levels is the soft guidance for most corpora.
@@ -348,8 +348,8 @@ JD's two-level limit is not a flaw - for personal use it is exactly right. JDX d
 8. Date stamps are optional. When present, format is `YYMMDD`.
 
 **Schema**
-9. Every corpus has a `jdx.config.yaml` at its root. It is written once and treated as immutable.
-10. Every corpus has a `jdx.manifest.yaml`. It maps every address to its label, description, and parent.
+9. Every corpus has a `das.config.yaml` at its root. It is written once and treated as immutable.
+10. Every corpus has a `das.manifest.yaml`. It maps every address to its label, description, and parent.
 11. Changing the corpus config after initialization is a breaking change. Document it. Migrate fully.
 12. Retiring a node: set `deprecated: true` in the manifest. Never delete the entry. Never reuse the address.
 
@@ -362,20 +362,20 @@ JD's two-level limit is not a flaw - for personal use it is exactly right. JDX d
 
 ## 10. Future Integration Points
 
-JDX is designed as a standalone standard. The following integrations are in scope for future phases and were considered in the design of this spec:
+Hexaxia DAS is designed as a standalone standard. The following integrations are in scope for future phases and were considered in the design of this spec:
 
 ### 10.1 Agent Navigation
 
-The `jdx.manifest.yaml` is the foundation for agent navigation. An AI agent that loads the manifest can answer "where does X live?" without traversing the filesystem. The `agent_hint` field on manifest nodes allows human authors to prime the agent with routing context at schema-build time. Full agent navigation spec is deferred.
+The `das.manifest.yaml` is the foundation for agent navigation. An AI agent that loads the manifest can answer "where does X live?" without traversing the filesystem. The `agent_hint` field on manifest nodes allows human authors to prime the agent with routing context at schema-build time. Full agent navigation spec is deferred.
 
 ### 10.2 Document Passports
 
-A Document Passport is a portable metadata container for individual documents. The JDX address is a natural primary key for passports - every document with a JDX address can carry a passport that includes that address as its location identifier. This makes documents queryable by address in a passport index without filesystem traversal. Document Passport integration spec is deferred.
+A Document Passport is a portable metadata container for individual documents. The DAS address is a natural primary key for passports - every document with a DAS address can carry a passport that includes that address as its location identifier. This makes documents queryable by address in a passport index without filesystem traversal. Document Passport integration spec is deferred.
 
 ### 10.3 Federation
 
-The `address_separator` field in `jdx.config.yaml` is reserved for future federation support. When multiple JDX corpora need to be addressed together (e.g. across Hexaxia Technologies, Hexaxia AI, and Hexaxia Media), an org-prefix scheme will scope addresses to their origin corpus. Federation spec is deferred.
+The `address_separator` field in `das.config.yaml` is reserved for future federation support. When multiple Hexaxia DAS corpora need to be addressed together (e.g. across Hexaxia Technologies, Hexaxia AI, and Hexaxia Media), an org-prefix scheme will scope addresses to their origin corpus. Federation spec is deferred.
 
 ---
 
-*JDX v0.1 | Hexaxia Technologies | 2026-05-27*
+*Hexaxia DAS v0.1 | Hexaxia Technologies | 2026-05-27*

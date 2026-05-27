@@ -1,7 +1,7 @@
 import pytest
-from jdx.config import load_config
-from jdx.manifest import (
-    ManifestNode, JDXManifest, load_manifest, add_node,
+from das.config import load_config
+from das.manifest import (
+    ManifestNode, DASManifest, load_manifest, add_node,
     write_manifest, search_nodes, infer_parent, infer_type,
 )
 

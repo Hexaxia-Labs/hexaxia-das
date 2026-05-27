@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import yaml
 
-MANIFEST_FILENAME = "jdx.manifest.yaml"
+MANIFEST_FILENAME = "das.manifest.yaml"
 LEVEL_TYPES = ["area", "category", "subcategory", "context"]
 VALID_TYPES = set(LEVEL_TYPES) | {"file"}
 
@@ -21,7 +21,7 @@ class ManifestNode:
 
 
 @dataclass
-class JDXManifest:
+class DASManifest:
     version: str
     corpus: str
     updated: str
@@ -38,7 +38,7 @@ def infer_type(address: str) -> str:
     return LEVEL_TYPES[depth] if depth < len(LEVEL_TYPES) else "context"
 
 
-def load_manifest(path: Path) -> JDXManifest:
+def load_manifest(path: Path) -> DASManifest:
     with open(path) as f:
         data = yaml.safe_load(f)
     known_node_fields = {f.name for f in fields(ManifestNode)}
@@ -46,7 +46,7 @@ def load_manifest(path: Path) -> JDXManifest:
         addr: ManifestNode(**{k: v for k, v in node_data.items() if k in known_node_fields})
         for addr, node_data in (data.get("nodes") or {}).items()
     }
-    return JDXManifest(
+    return DASManifest(
         version=data["version"],
         corpus=data["corpus"],
         updated=data["updated"],
@@ -54,7 +54,7 @@ def load_manifest(path: Path) -> JDXManifest:
     )
 
 
-def add_node(manifest: JDXManifest, address: str, node: ManifestNode) -> None:
+def add_node(manifest: DASManifest, address: str, node: ManifestNode) -> None:
     if address in manifest.nodes:
         raise ValueError(f"Address '{address}' already exists in manifest")
     parent = infer_parent(address)
@@ -67,7 +67,7 @@ def add_node(manifest: JDXManifest, address: str, node: ManifestNode) -> None:
 
 
 def search_nodes(
-    manifest: JDXManifest, query: str
+    manifest: DASManifest, query: str
 ) -> List[Tuple[str, ManifestNode]]:
     q = query.lower()
     return [
@@ -77,7 +77,7 @@ def search_nodes(
     ]
 
 
-def write_manifest(path: Path, manifest: JDXManifest) -> None:
+def write_manifest(path: Path, manifest: DASManifest) -> None:
     nodes_data: Dict = {}
     for addr, node in sorted(manifest.nodes.items()):
         entry: Dict = {

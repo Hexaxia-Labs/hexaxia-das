@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import Optional
 import yaml
 
-CONFIG_FILENAME = "jdx.config.yaml"
+CONFIG_FILENAME = "das.config.yaml"
 SPEC_VERSION = "1.0"
 VALID_CONTEXT_TYPES = {"client", "project", "dept", "none"}
 
 
 @dataclass
-class JDXConfig:
+class DASConfig:
     version: str
     corpus: str
     initialized: str
@@ -29,18 +29,18 @@ class JDXConfig:
             )
 
 
-def load_config(corpus_root: Path) -> JDXConfig:
+def load_config(corpus_root: Path) -> DASConfig:
     path = corpus_root / CONFIG_FILENAME
     if not path.exists():
         raise FileNotFoundError(f"{CONFIG_FILENAME} not found at {corpus_root}")
     with open(path) as f:
         data = yaml.safe_load(f)
-    known_fields = {f.name for f in fields(JDXConfig)}
+    known_fields = {f.name for f in fields(DASConfig)}
     data = {k: v for k, v in data.items() if k in known_fields}
-    return JDXConfig(**data)
+    return DASConfig(**data)
 
 
-def write_config(corpus_root: Path, config: JDXConfig) -> None:
+def write_config(corpus_root: Path, config: DASConfig) -> None:
     path = corpus_root / CONFIG_FILENAME
     data = {k: v for k, v in vars(config).items() if v is not None}
     with open(path, "w") as f:

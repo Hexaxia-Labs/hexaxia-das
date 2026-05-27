@@ -1,5 +1,5 @@
 import pytest
-from jdx.config import JDXConfig, load_config, write_config
+from das.config import DASConfig, load_config, write_config
 
 
 def test_load_config(corpus):
@@ -16,12 +16,12 @@ def test_load_config_missing_file(tmp_path):
 
 
 def test_write_config_roundtrip(tmp_path):
-    config = JDXConfig(
+    config = DASConfig(
         version="1.0",
         corpus="my-corpus",
         initialized="2026-05-27",
         address_separator=".",
-        manifest="jdx.manifest.yaml",
+        manifest="das.manifest.yaml",
     )
     write_config(tmp_path, config)
     loaded = load_config(tmp_path)
@@ -30,38 +30,38 @@ def test_write_config_roundtrip(tmp_path):
 
 
 def test_optional_fields_omitted_from_file(tmp_path):
-    config = JDXConfig(
+    config = DASConfig(
         version="1.0",
         corpus="bare",
         initialized="2026-05-27",
         address_separator=".",
-        manifest="jdx.manifest.yaml",
+        manifest="das.manifest.yaml",
     )
     write_config(tmp_path, config)
     import yaml
-    raw = yaml.safe_load((tmp_path / "jdx.config.yaml").read_text())
+    raw = yaml.safe_load((tmp_path / "das.config.yaml").read_text())
     assert "org" not in raw
     assert "context_type" not in raw
 
 
 def test_invalid_address_separator():
     with pytest.raises(ValueError, match="address_separator"):
-        JDXConfig(
+        DASConfig(
             version="1.0",
             corpus="test",
             initialized="2026-05-27",
             address_separator="/",
-            manifest="jdx.manifest.yaml",
+            manifest="das.manifest.yaml",
         )
 
 
 def test_invalid_context_type():
     with pytest.raises(ValueError, match="context_type"):
-        JDXConfig(
+        DASConfig(
             version="1.0",
             corpus="test",
             initialized="2026-05-27",
             address_separator=".",
-            manifest="jdx.manifest.yaml",
+            manifest="das.manifest.yaml",
             context_type="invalid",
         )

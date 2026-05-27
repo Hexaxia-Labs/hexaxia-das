@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
-from jdx.config import load_config, CONFIG_FILENAME
-from jdx.manifest import load_manifest, MANIFEST_FILENAME
+from das.config import load_config, CONFIG_FILENAME
+from das.manifest import load_manifest, MANIFEST_FILENAME
 
 ADDRESS_RE = re.compile(r"^\d{2}(\.\d{2})*$")
 FILE_ADDRESS_RE = re.compile(r"^(\d{2}(\.\d{2})*)-")
@@ -14,7 +14,7 @@ FOLDER_NAME_RE = re.compile(r"^\d{2}(\.\d{2})*-[A-Z][a-zA-Z0-9-]*$")
 SKIP_NAMES = {
     CONFIG_FILENAME,
     MANIFEST_FILENAME,
-    "jdx.migration.md",
+    "das.migration.md",
     "README.md",
     ".git",
 }
@@ -47,12 +47,12 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
         address = _extract_address(item.name)
 
         if address is None:
-            errors.append(ValidationError(str(rel), "No JDX address prefix found"))
+            errors.append(ValidationError(str(rel), "No address prefix found"))
             continue
 
         if not ADDRESS_RE.match(address):
             errors.append(
-                ValidationError(str(rel), f"Invalid JDX address format: '{address}'")
+                ValidationError(str(rel), f"Invalid address format: '{address}'")
             )
             continue
 

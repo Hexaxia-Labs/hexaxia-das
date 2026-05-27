@@ -1,4 +1,4 @@
-# The Philosophy of JDX
+# The Philosophy of Hexaxia DAS
 
 ## Where This Came From
 
@@ -8,28 +8,28 @@ folder hierarchy - is genuinely correct. For an individual managing their own fi
 two-level limit is not a constraint. It is a feature. It forces the kind of discipline that
 makes a system actually usable.
 
-JDX does not exist because JD is wrong. It exists because JD was designed for a single person,
+Hexaxia DAS does not exist because JD is wrong. It exists because JD was designed for a single person,
 and organizations are not single people.
 
 When you scale a JD corpus across a company with dozens of clients, multiple service lines,
 years of history, and eventually AI agents navigating alongside humans - you hit the ceiling.
-JDX is what you build when you've hit that ceiling and you want to keep the one principle that
+Hexaxia DAS is what you build when you've hit that ceiling and you want to keep the one principle that
 actually matters: **numbers are permanent**.
 
 ---
 
 ## The Core Analogy: DNS for Documents
 
-The clearest way to understand JDX is through the DNS analogy.
+The clearest way to understand Hexaxia DAS is through the DNS analogy.
 
 Every device on a network has an **IP address** - a stable, machine-parseable numeric identifier
 that never changes and is globally unambiguous. It also has a **hostname** - a human-readable
 name that can be updated, pointed at a different address, or changed entirely without breaking
 anything that references the underlying IP.
 
-JDX gives every folder and file the same two-part identity:
+Hexaxia DAS gives every folder and file the same two-part identity:
 
-- The **JDX address** (`02.01.03`) is the IP address. Permanent. Machine-parseable.
+- The **DAS address** (`02.01.03`) is the IP address. Permanent. Machine-parseable.
   An agent strips everything after the first hyphen and has a precise coordinate.
 - The **human label** (`Active-Projects`) is the hostname. Readable. Can change when
   the content changes. Never changes the address beneath it.
@@ -64,7 +64,7 @@ impractical.
 **3. Filenames do not carry their location.**
 A file named `Business Plan 2024.docx` contains no information about where it belongs.
 An agent that finds this file as an email attachment cannot determine its home in the corpus
-without a search. JDX files carry their address: `04.02.01-HXT-business-plan-240101.docx` is
+without a search. Hexaxia DAS files carry their address: `04.02.01-HXT-business-plan-240101.docx` is
 unambiguous. The location is in the name.
 
 **4. There is no configuration artifact.**
@@ -74,16 +74,16 @@ context identifier means. Every corpus is subtly different. This is fine when on
 the corpus. It is a problem when ten people contribute to it, and a serious problem when an
 agent is expected to navigate it.
 
-JDX solves all four. The depth limit is lifted. The manifest provides a machine-readable map.
+Hexaxia DAS solves all four. The depth limit is lifted. The manifest provides a machine-readable map.
 Filenames carry their address. The config file locks the naming schema at initialization.
 
 ---
 
 ## The One Principle Worth Keeping
 
-JD and JDX agree on exactly one thing: **addresses are permanent**.
+JD and Hexaxia DAS agree on exactly one thing: **addresses are permanent**.
 
-Once a JDX address is assigned to a node, it never changes. It never gets renumbered. If the
+Once a DAS address is assigned to a node, it never changes. It never gets renumbered. If the
 client at `02.01` changes their name, the label changes - but the address `02.01` stays. If the
 engagement ends, the address is retired by setting `deprecated: true` in the manifest - it is
 never recycled, never reused, never given to a different client.
@@ -99,7 +99,7 @@ identifier that external systems can trust.
 
 ## Schema-First Design
 
-The `jdx.config.yaml` file is the corpus constitution. It declares - once, at initialization -
+The `das.config.yaml` file is the corpus constitution. It declares - once, at initialization -
 what the naming schema is for every file that will ever live in this corpus:
 
 - Does this corpus include an org code in filenames?
@@ -110,10 +110,10 @@ These decisions are **immutable after initialization**. This is not an accident 
 It is a deliberate design choice based on a simple observation: every filename in the corpus
 depends on these decisions being stable. If you change the schema, every existing filename is
 now wrong relative to the new schema. There is no safe way to change the config without
-migrating every file - which is why JDX treats a config change as a breaking migration
+migrating every file - which is why Hexaxia DAS treats a config change as a breaking migration
 requiring documentation and a full rename pass.
 
-The immutability of the schema is the mechanism that makes a JDX corpus trustworthy over time.
+The immutability of the schema is the mechanism that makes a DAS corpus trustworthy over time.
 You can add files. You can deepen the hierarchy. You can update labels. You cannot change what
 the names mean.
 
@@ -121,7 +121,7 @@ the names mean.
 
 ## The Manifest as the Corpus Map
 
-The `jdx.manifest.yaml` file is the corpus map. It lists every address that has ever existed,
+The `das.manifest.yaml` file is the corpus map. It lists every address that has ever existed,
 what it contains, how it relates to its parent, and - optionally - routing hints for agents.
 
 An AI agent that loads the manifest once can answer "where does X live?" for the entire corpus
@@ -130,7 +130,7 @@ engagement, that `02.01.01` is Contracts. It can navigate the address space the 
 device navigates a routing table - by consulting a pre-built map, not by exploring the terrain.
 
 The `agent_hint` field is the explicit acknowledgment that agents are first-class navigators in
-a JDX corpus. When you write a hint like `"Primary MSP client. Contracts in 02.01.01, active
+a DAS corpus. When you write a hint like `"Primary MSP client. Contracts in 02.01.01, active
 projects in 02.01.03."`, you are not writing documentation for yourself. You are writing
 routing context for an agent that will use this corpus long after you have forgotten what you
 put where.
@@ -139,7 +139,7 @@ put where.
 
 ## Depth as Something You Earn
 
-JDX imposes no hard depth limit. In theory, you can go as many levels deep as the content
+Hexaxia DAS imposes no hard depth limit. In theory, you can go as many levels deep as the content
 requires. In practice, depth should be **earned**, not assumed.
 
 The guidance is:
@@ -158,23 +158,23 @@ natural variation between them - then a new level is warranted. Not before.
 
 ---
 
-## What JDX Is Not
+## What Hexaxia DAS Is Not
 
-**JDX is not a replacement for Johnny.Decimal.**
-For personal use, JD is the right tool. JDX's additional complexity - the config file, the
+**Hexaxia DAS is not a replacement for Johnny.Decimal.**
+For personal use, JD is the right tool. Hexaxia DAS's additional complexity - the config file, the
 manifest, the naming convention - is overhead that a single person does not need and should
-not carry. JDX is for when JD's constraints are the problem, not the solution.
+not carry. Hexaxia DAS is for when JD's constraints are the problem, not the solution.
 
-**JDX is not a document management system.**
-JDX does not manage access control, version history, workflow routing, or document lifecycle.
+**Hexaxia DAS is not a document management system.**
+Hexaxia DAS does not manage access control, version history, workflow routing, or document lifecycle.
 It is an addressing and organization standard. It tells you where things live and gives those
 locations stable names. What you do with the documents once located is outside its scope.
 
-**JDX is not a search replacement.**
+**Hexaxia DAS is not a search replacement.**
 The manifest enables fast structural navigation, but full-text search across document contents
-is a separate concern. JDX addresses are designed to be stable identifiers, not search indices.
+is a separate concern. DAS addresses are designed to be stable identifiers, not search indices.
 
-**JDX is not finished.**
+**Hexaxia DAS is not finished.**
 Version 0.1.0 is a working proof of concept. Agent navigation, document passport integration,
 and multi-corpus federation are designed but deferred. The standard is intentionally minimal
 at v0.1.0 - stable enough to build on, open enough to extend.
@@ -183,27 +183,27 @@ at v0.1.0 - stable enough to build on, open enough to extend.
 
 ## The Divergence from JD: A Summary
 
-| Dimension | Johnny.Decimal | JDX |
+| Dimension | Johnny.Decimal | Hexaxia DAS |
 |---|---|---|
 | Intended scope | Personal file organization | Organizational document corpora |
 | Depth limit | 2 levels (by design) | Unlimited, guided by soft caps |
 | Address range | 10 areas of 10 categories | 00-99 at every level |
 | Filename role | Human navigation only | Machine-parseable coordinate |
-| Schema artifact | None - convention only | `jdx.config.yaml` + `jdx.manifest.yaml` |
+| Schema artifact | None - convention only | `das.config.yaml` + `das.manifest.yaml` |
 | Naming convention | Informal, per-user | Formally defined, corpus-configured, immutable |
 | Agent navigation | No | Yes - manifest is the corpus map |
 | Multi-entity | No | Designed for (deferred to v0.2+) |
 | Immutability scope | Numbers permanent | Numbers + full naming schema permanent |
 
 The divergence is not a criticism of JD. It is an acknowledgment that organizational scale
-introduces requirements that JD explicitly chose not to address. JDX carries forward the one
+introduces requirements that JD explicitly chose not to address. Hexaxia DAS carries forward the one
 principle that works at any scale - permanence - and builds a complete standard around it.
 
 ---
 
 ## Why This Format Is Being Used
 
-JDX was designed to solve a specific, real problem: Hexaxia Technologies manages a growing
+Hexaxia DAS was designed to solve a specific, real problem: Hexaxia Technologies manages a growing
 document corpus spanning multiple clients, service lines, and years. Standard JD ran out of
 room. No existing alternative provided both human navigability and machine-readable structure.
 
@@ -221,10 +221,10 @@ They do not remember locations - they look up coordinates. An address system tha
 machine-readable map is not a nice-to-have for agents. It is the prerequisite for them being
 useful at all.
 
-JDX was built to serve both audiences at once: humans who need to find and name things, and
+Hexaxia DAS was built to serve both audiences at once: humans who need to find and name things, and
 agents that need to navigate and reason about where things are. The address is the bridge
 between them.
 
 ---
 
-*JDX v0.1.0 | Hexaxia Technologies | 2026-05-27*
+*Hexaxia DAS v0.2.0 | Hexaxia Technologies | 2026-05-27*

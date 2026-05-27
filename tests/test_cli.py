@@ -1,6 +1,6 @@
 import pytest
 from typer.testing import CliRunner
-from jdx.cli import app
+from das.cli import app
 
 runner = CliRunner()
 
@@ -8,19 +8,19 @@ runner = CliRunner()
 def test_init_creates_config_and_manifest(tmp_path):
     result = runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
     assert result.exit_code == 0, result.output
-    assert (tmp_path / "jdx.config.yaml").exists()
-    assert (tmp_path / "jdx.manifest.yaml").exists()
+    assert (tmp_path / "das.config.yaml").exists()
+    assert (tmp_path / "das.manifest.yaml").exists()
 
 
 def test_init_output_names_files(tmp_path):
     result = runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
-    assert "jdx.config.yaml" in result.output
-    assert "jdx.manifest.yaml" in result.output
+    assert "das.config.yaml" in result.output
+    assert "das.manifest.yaml" in result.output
 
 
 def test_init_with_org(tmp_path):
     runner.invoke(app, ["init", "my-corpus", "--org", "HXT", "--path", str(tmp_path)])
-    from jdx.config import load_config
+    from das.config import load_config
     config = load_config(tmp_path)
     assert config.org == "HXT"
 
@@ -45,8 +45,8 @@ def test_add_node_registers_in_manifest(tmp_path):
     runner.invoke(
         app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)]
     )
-    from jdx.config import load_config
-    from jdx.manifest import load_manifest
+    from das.config import load_config
+    from das.manifest import load_manifest
     config = load_config(tmp_path)
     manifest = load_manifest(tmp_path / config.manifest)
     assert "00" in manifest.nodes
