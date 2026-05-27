@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -41,8 +41,9 @@ def infer_type(address: str) -> str:
 def load_manifest(path: Path) -> JDXManifest:
     with open(path) as f:
         data = yaml.safe_load(f)
+    known_node_fields = {f.name for f in fields(ManifestNode)}
     nodes = {
-        addr: ManifestNode(**node_data)
+        addr: ManifestNode(**{k: v for k, v in node_data.items() if k in known_node_fields})
         for addr, node_data in (data.get("nodes") or {}).items()
     }
     return JDXManifest(

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Optional
 import yaml
@@ -35,6 +35,8 @@ def load_config(corpus_root: Path) -> JDXConfig:
         raise FileNotFoundError(f"{CONFIG_FILENAME} not found at {corpus_root}")
     with open(path) as f:
         data = yaml.safe_load(f)
+    known_fields = {f.name for f in fields(JDXConfig)}
+    data = {k: v for k, v in data.items() if k in known_fields}
     return JDXConfig(**data)
 
 
