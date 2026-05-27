@@ -69,9 +69,17 @@ def add(
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
     """Add a node to the manifest."""
-    config = load_config(path)
+    try:
+        config = load_config(path)
+    except FileNotFoundError:
+        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        raise typer.Exit(1)
     manifest_path = path / config.manifest
-    manifest = load_manifest(manifest_path)
+    try:
+        manifest = load_manifest(manifest_path)
+    except FileNotFoundError:
+        typer.echo(f"Error: manifest file not found. Corpus may be corrupted.", err=True)
+        raise typer.Exit(1)
     node = ManifestNode(
         label=label,
         description=description,
@@ -96,8 +104,16 @@ def ls(
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
     """List manifest nodes."""
-    config = load_config(path)
-    manifest = load_manifest(path / config.manifest)
+    try:
+        config = load_config(path)
+    except FileNotFoundError:
+        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        raise typer.Exit(1)
+    try:
+        manifest = load_manifest(path / config.manifest)
+    except FileNotFoundError:
+        typer.echo(f"Error: manifest file not found. Corpus may be corrupted.", err=True)
+        raise typer.Exit(1)
     items = list(manifest.nodes.items())
     if address:
         items = [
@@ -118,8 +134,16 @@ def find(
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
     """Search manifest by label or description."""
-    config = load_config(path)
-    manifest = load_manifest(path / config.manifest)
+    try:
+        config = load_config(path)
+    except FileNotFoundError:
+        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        raise typer.Exit(1)
+    try:
+        manifest = load_manifest(path / config.manifest)
+    except FileNotFoundError:
+        typer.echo(f"Error: manifest file not found. Corpus may be corrupted.", err=True)
+        raise typer.Exit(1)
     results = search_nodes(manifest, query)
     if not results:
         typer.echo(f"No results for '{query}'")
@@ -133,7 +157,11 @@ def validate(
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
     """Validate corpus naming convention compliance."""
-    errors = validate_corpus(path)
+    try:
+        errors = validate_corpus(path)
+    except FileNotFoundError:
+        typer.echo(f"Error: no JDX corpus found at {path}. Run 'jdx init' first.", err=True)
+        raise typer.Exit(1)
     if not errors:
         typer.echo("Corpus is valid.")
         return
