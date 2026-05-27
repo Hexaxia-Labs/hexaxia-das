@@ -197,6 +197,9 @@ Naming breakdown for `02.01.01-ATL-NSL-msa-260301.pdf`:
 | Descriptor | `msa` | What the document is |
 | Date | `260301` | YYMMDD - March 1, 2026 |
 
+The CONTEXT code is optional even when `context_type` is configured. Omit it for
+internal documents that do not belong to a specific client, project, or department.
+
 ---
 
 ## Step 6: Validate the Corpus
