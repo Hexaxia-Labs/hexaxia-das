@@ -1,0 +1,168 @@
+import pytest
+from typer.testing import CliRunner
+from jdx.cli import app
+
+runner = CliRunner()
+
+
+def test_init_creates_config_and_manifest(tmp_path):
+    result = runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "jdx.config.yaml").exists()
+    assert (tmp_path / "jdx.manifest.yaml").exists()
+
+
+def test_init_output_names_files(tmp_path):
+    result = runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    assert "jdx.config.yaml" in result.output
+    assert "jdx.manifest.yaml" in result.output
+
+
+def test_init_with_org(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--org", "HXT", "--path", str(tmp_path)])
+    from jdx.config import load_config
+    config = load_config(tmp_path)
+    assert config.org == "HXT"
+
+
+def test_init_already_initialized_exits_1(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_add_node(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    result = runner.invoke(
+        app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 0, result.output
+    assert "Added [00] Admin" in result.output
+
+
+def test_add_node_registers_in_manifest(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(
+        app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)]
+    )
+    from jdx.config import load_config
+    from jdx.manifest import load_manifest
+    config = load_config(tmp_path)
+    manifest = load_manifest(tmp_path / config.manifest)
+    assert "00" in manifest.nodes
+    assert manifest.nodes["00"].label == "Admin"
+
+
+def test_add_duplicate_node_exits_1(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(
+        app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)]
+    )
+    result = runner.invoke(
+        app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 1
+
+
+def test_add_child_node(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(
+        app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)]
+    )
+    result = runner.invoke(
+        app,
+        ["add", "00.01", "Business-Registration", "Registration docs",
+         "--path", str(tmp_path)],
+    )
+    assert result.exit_code == 0, result.output
+
+
+def test_add_child_without_parent_exits_1(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    result = runner.invoke(
+        app,
+        ["add", "00.01", "Business-Registration", "Registration docs",
+         "--path", str(tmp_path)],
+    )
+    assert result.exit_code == 1
+
+
+def test_ls_empty_corpus(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["ls", "--path", str(tmp_path)])
+    assert result.exit_code == 0
+
+
+def test_ls_shows_all_nodes(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "01", "Finance", "Financial records", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["ls", "--path", str(tmp_path)])
+    assert "Admin" in result.output
+    assert "Finance" in result.output
+
+
+def test_ls_filters_by_parent(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00.01", "Business-Registration", "Registration docs", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "01", "Finance", "Financial records", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["ls", "00", "--path", str(tmp_path)])
+    assert "Admin" in result.output
+    assert "Business-Registration" in result.output
+    assert "Finance" not in result.output
+
+
+def test_find_returns_matching_node(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "01", "Finance", "Financial records", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["find", "admin", "--path", str(tmp_path)])
+    assert "Admin" in result.output
+    assert "Finance" not in result.output
+
+
+def test_find_searches_description(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["find", "governance", "--path", str(tmp_path)])
+    assert "Admin" in result.output
+
+
+def test_find_no_results_message(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["find", "nonexistent", "--path", str(tmp_path)])
+    assert "No results" in result.output
+    assert result.exit_code == 0
+
+
+def test_validate_clean_corpus(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00", "Admin", "Company governance", "--path", str(tmp_path)])
+    (tmp_path / "00-Admin").mkdir()
+    (tmp_path / "00-Admin" / "00-TST-some-doc.md").touch()
+    result = runner.invoke(app, ["validate", "--path", str(tmp_path)])
+    assert result.exit_code == 0
+    assert "valid" in result.output
+
+
+def test_validate_unregistered_folder_exits_1(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    (tmp_path / "00-Admin").mkdir()
+    result = runner.invoke(app, ["validate", "--path", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_validate_folder_without_address_exits_1(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    (tmp_path / "Admin").mkdir()
+    result = runner.invoke(app, ["validate", "--path", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_validate_reports_error_count(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    (tmp_path / "Admin").mkdir()
+    (tmp_path / "Finance").mkdir()
+    result = runner.invoke(app, ["validate", "--path", str(tmp_path)])
+    assert "2 validation error" in result.output

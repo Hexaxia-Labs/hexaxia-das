@@ -1,0 +1,143 @@
+from __future__ import annotations
+from datetime import date
+from pathlib import Path
+from typing import Optional
+import typer
+
+from jdx.config import (
+    JDXConfig, load_config, write_config,
+    SPEC_VERSION, CONFIG_FILENAME,
+)
+from jdx.manifest import (
+    JDXManifest, ManifestNode, load_manifest, add_node,
+    write_manifest, search_nodes, infer_parent, infer_type,
+    MANIFEST_FILENAME,
+)
+from jdx.validator import validate_corpus
+
+app = typer.Typer(help="JDX: Johnny Decimal Extended corpus tool")
+
+
+@app.command()
+def init(
+    corpus: str = typer.Argument(..., help="Corpus slug (e.g. hexaxia-technologies)"),
+    org: Optional[str] = typer.Option(None, help="Org code (e.g. HXT)"),
+    context_type: Optional[str] = typer.Option(
+        None, help="client | project | dept | none"
+    ),
+    date_format: Optional[str] = typer.Option("YYMMDD", help="Date format"),
+    path: Path = typer.Option(Path("."), help="Corpus root directory"),
+):
+    """Initialize a new JDX corpus."""
+    config_path = path / CONFIG_FILENAME
+    if config_path.exists():
+        typer.echo(
+            f"Error: {CONFIG_FILENAME} already exists. "
+            "Corpus already initialized.",
+            err=True,
+        )
+        raise typer.Exit(1)
+
+    config = JDXConfig(
+        version=SPEC_VERSION,
+        corpus=corpus,
+        initialized=str(date.today()),
+        address_separator=".",
+        manifest=MANIFEST_FILENAME,
+        org=org,
+        context_type=context_type,
+        date_format=date_format,
+    )
+    manifest = JDXManifest(
+        version=SPEC_VERSION,
+        corpus=corpus,
+        updated=str(date.today()),
+    )
+    write_config(path, config)
+    write_manifest(path / MANIFEST_FILENAME, manifest)
+    typer.echo(f"Initialized JDX corpus '{corpus}' at {path}")
+    typer.echo(f"  {CONFIG_FILENAME}")
+    typer.echo(f"  {MANIFEST_FILENAME}")
+
+
+@app.command()
+def add(
+    address: str = typer.Argument(..., help="JDX address (e.g. 00.01)"),
+    label: str = typer.Argument(..., help="Folder label (e.g. Business-Registration)"),
+    description: str = typer.Argument(..., help="One-sentence description"),
+    agent_hint: Optional[str] = typer.Option(None, help="Agent routing hint"),
+    path: Path = typer.Option(Path("."), help="Corpus root directory"),
+):
+    """Add a node to the manifest."""
+    config = load_config(path)
+    manifest_path = path / config.manifest
+    manifest = load_manifest(manifest_path)
+    node = ManifestNode(
+        label=label,
+        description=description,
+        type=infer_type(address),
+        parent=infer_parent(address),
+        agent_hint=agent_hint,
+    )
+    try:
+        add_node(manifest, address, node)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1)
+    write_manifest(manifest_path, manifest)
+    typer.echo(f"Added [{address}] {label}")
+
+
+@app.command()
+def ls(
+    address: Optional[str] = typer.Argument(
+        None, help="Show node and its children (omit for all)"
+    ),
+    path: Path = typer.Option(Path("."), help="Corpus root directory"),
+):
+    """List manifest nodes."""
+    config = load_config(path)
+    manifest = load_manifest(path / config.manifest)
+    items = list(manifest.nodes.items())
+    if address:
+        items = [
+            (a, n)
+            for a, n in items
+            if a == address or n.parent == address
+        ]
+    for addr, node in sorted(items):
+        deprecated = " [deprecated]" if node.deprecated else ""
+        typer.echo(
+            f"  {addr:<20} {node.label:<30} {node.description}{deprecated}"
+        )
+
+
+@app.command()
+def find(
+    query: str = typer.Argument(..., help="Search term (label or description)"),
+    path: Path = typer.Option(Path("."), help="Corpus root directory"),
+):
+    """Search manifest by label or description."""
+    config = load_config(path)
+    manifest = load_manifest(path / config.manifest)
+    results = search_nodes(manifest, query)
+    if not results:
+        typer.echo(f"No results for '{query}'")
+        return
+    for addr, node in results:
+        typer.echo(f"  {addr:<20} {node.label:<30} {node.description}")
+
+
+@app.command()
+def validate(
+    path: Path = typer.Option(Path("."), help="Corpus root directory"),
+):
+    """Validate corpus naming convention compliance."""
+    errors = validate_corpus(path)
+    if not errors:
+        typer.echo("Corpus is valid.")
+        return
+    typer.echo(f"{len(errors)} validation error(s):", err=True)
+    for e in errors:
+        typer.echo(f"  {e.path}: {e.message}", err=True)
+    raise typer.Exit(1)
