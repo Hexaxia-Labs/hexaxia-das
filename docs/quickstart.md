@@ -18,9 +18,9 @@ Install JDX:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install jdx
-# or from source:
-# .venv/bin/pip install -e ~/Projects/jdx
+.venv/bin/pip install -e ~/Projects/jdx
+# or once published to PyPI:
+# .venv/bin/pip install jdx
 ```
 
 Verify the install:

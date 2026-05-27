@@ -27,9 +27,9 @@ two-level limit becomes a ceiling.
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install jdx
-# or from source:
-# .venv/bin/pip install -e .
+.venv/bin/pip install -e .
+# or once published to PyPI:
+# .venv/bin/pip install jdx
 ```
 
 ---

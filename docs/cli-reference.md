@@ -4,9 +4,9 @@ Complete reference for the `jdx` command-line tool.
 
 ---
 
-## Global Options
+## Per-Command Options
 
-All commands accept `--path` to specify a corpus root directory other than the current directory.
+Every command accepts a `--path` option to specify a corpus root directory other than the current directory. Pass it to the specific subcommand, not to `jdx` itself.
 
 ```bash
 jdx --help
