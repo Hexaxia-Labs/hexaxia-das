@@ -1,0 +1,296 @@
+# JDX CLI Reference
+
+Complete reference for the `jdx` command-line tool.
+
+---
+
+## Global Options
+
+All commands accept `--path` to specify a corpus root directory other than the current directory.
+
+```bash
+jdx --help
+jdx <command> --help
+```
+
+---
+
+## jdx init
+
+Initialize a new JDX corpus in the specified directory.
+
+**Usage:**
+
+```
+jdx init CORPUS [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `CORPUS` | Yes | Corpus slug, lowercase hyphenated (e.g. `hexaxia-technologies`) |
+
+**Options:**
+
+| Option | Default | Description |
+|---|---|---|
+| `--org TEXT` | None | Org code prepended to filenames (e.g. `HXT`). 2-5 uppercase letters. |
+| `--context-type TEXT` | None | Secondary identifier type: `client`, `project`, `dept`, or `none` |
+| `--date-format TEXT` | `YYMMDD` | Date format for filenames. Only `YYMMDD` is supported. |
+| `--path PATH` | `.` | Directory to initialize the corpus in |
+
+**Exit codes:**
+
+| Code | Condition |
+|---|---|
+| 0 | Corpus initialized successfully |
+| 1 | `jdx.config.yaml` already exists (corpus already initialized) |
+
+**What it creates:**
+
+- `jdx.config.yaml` - corpus configuration (immutable after this point)
+- `jdx.manifest.yaml` - empty corpus manifest
+
+**Examples:**
+
+```bash
+# Minimal corpus (no org code, no context type)
+jdx init my-corpus
+
+# Full config with org and client context
+jdx init hexaxia-technologies --org HXT --context-type client
+
+# Initialize in a specific directory
+jdx init my-corpus --path /home/user/Documents/corpus
+
+# No dates in filenames
+jdx init my-corpus --org HXT --date-format ""
+```
+
+---
+
+## jdx add
+
+Add a node to the corpus manifest.
+
+**Usage:**
+
+```
+jdx add ADDRESS LABEL DESCRIPTION [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `ADDRESS` | Yes | JDX address (e.g. `00`, `00.01`, `00.01.01`) |
+| `LABEL` | Yes | Human-readable folder label, Title-Cased and hyphenated (e.g. `Business-Registration`) |
+| `DESCRIPTION` | Yes | One-sentence description of what belongs here |
+
+**Options:**
+
+| Option | Default | Description |
+|---|---|---|
+| `--agent-hint TEXT` | None | Optional routing guidance for AI agents |
+| `--path PATH` | `.` | Corpus root directory |
+
+**Exit codes:**
+
+| Code | Condition |
+|---|---|
+| 0 | Node added successfully |
+| 1 | Corpus not initialized, address already exists, or parent address missing |
+
+**Notes:**
+
+- Nodes must be added parent-first. `00.01` cannot be added before `00` exists.
+- Address format is validated: two-digit segments separated by dots (`00`, `00.01`, `00.01.01`).
+- The node type (`area`, `category`, `subcategory`, `context`) is inferred from address depth.
+- Once added, an address is permanent and cannot be reassigned.
+
+**Examples:**
+
+```bash
+# Add a top-level area
+jdx add 00 Admin "Company governance - legal, compliance, registrations"
+
+# Add a category
+jdx add 00.01 Business-Registration "Incorporation certificates and filings"
+
+# Add a subcategory with an agent hint
+jdx add 02.01 ULS "United Life Services - Indianapolis, IN" \
+  --agent-hint "Primary MSP client. Contracts in 02.01.01, projects in 02.01.03."
+
+# Add in a non-current-directory corpus
+jdx add 04 Marketing "Brand, campaigns, content" --path /mnt/d/docs/corpus
+```
+
+---
+
+## jdx ls
+
+List nodes in the corpus manifest.
+
+**Usage:**
+
+```
+jdx ls [ADDRESS] [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `ADDRESS` | No | If provided, show this node and its direct children only |
+
+**Options:**
+
+| Option | Default | Description |
+|---|---|---|
+| `--path PATH` | `.` | Corpus root directory |
+
+**Exit codes:**
+
+| Code | Condition |
+|---|---|
+| 0 | Always (even if no results) |
+| 1 | Corpus not initialized |
+
+**Output format:**
+
+```
+  {address:<20} {label:<30} {description}[deprecated]
+```
+
+Deprecated nodes are shown with a `[deprecated]` suffix.
+
+**Examples:**
+
+```bash
+# List all nodes
+jdx ls
+
+# List node 02 and its direct children
+jdx ls 02
+
+# List in a specific corpus
+jdx ls --path /mnt/d/docs/corpus
+```
+
+---
+
+## jdx find
+
+Search the manifest by label or description.
+
+**Usage:**
+
+```
+jdx find QUERY [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `QUERY` | Yes | Search term (case-insensitive, substring match) |
+
+**Options:**
+
+| Option | Default | Description |
+|---|---|---|
+| `--path PATH` | `.` | Corpus root directory |
+
+**Exit codes:**
+
+| Code | Condition |
+|---|---|
+| 0 | Always (even if no results) |
+| 1 | Corpus not initialized |
+
+**Notes:**
+
+- Search is case-insensitive and matches substrings in both the label and description fields.
+- Deprecated nodes are included in results.
+
+**Examples:**
+
+```bash
+# Find anything related to "client"
+jdx find client
+
+# Find anything with "invoice" in the label or description
+jdx find invoice
+
+# Search in a specific corpus
+jdx find compliance --path /mnt/d/docs/corpus
+```
+
+---
+
+## jdx validate
+
+Validate corpus naming convention compliance.
+
+**Usage:**
+
+```
+jdx validate [OPTIONS]
+```
+
+**Options:**
+
+| Option | Default | Description |
+|---|---|---|
+| `--path PATH` | `.` | Corpus root directory |
+
+**Exit codes:**
+
+| Code | Condition |
+|---|---|
+| 0 | Corpus is valid - no errors found |
+| 1 | One or more validation errors found, or corpus not initialized |
+
+**What is checked:**
+
+| Check | Rule |
+|---|---|
+| Address prefix | Every folder and file name must start with a valid JDX address |
+| Address format | Address segments must be exactly two digits (`00`-`99`) |
+| Folder casing | Folder label must start with an uppercase letter (`00-Admin`, not `00-admin`) |
+| Manifest registration | Every folder's address must be registered in `jdx.manifest.yaml` |
+| File-to-folder match | A file's address must match its parent folder's address |
+
+**Skipped items:**
+
+The validator skips: `jdx.config.yaml`, `jdx.manifest.yaml`, `jdx.migration.md`, `README.md`,
+hidden files and directories (starting with `.`), and any items inside hidden directories.
+
+**Example output (valid corpus):**
+
+```
+Corpus is valid.
+```
+
+**Example output (invalid corpus):**
+
+```
+3 validation error(s):
+  02-clients: Folder label must be Title-Cased and hyphenated (e.g. '00-Admin')
+  02-Clients/02.01-Northstar-Logistics/invoice.pdf: No JDX address prefix found
+  02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01-ATL-NSL-msa.pdf: File address '02.01' does not match parent folder address '02.01.01'
+```
+
+**Examples:**
+
+```bash
+# Validate current directory corpus
+jdx validate
+
+# Validate a specific corpus
+jdx validate --path /mnt/d/docs/corpus
+
+# Use in CI - non-zero exit if invalid
+jdx validate || echo "Corpus has naming violations"
+```
