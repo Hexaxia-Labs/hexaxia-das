@@ -166,6 +166,9 @@ Pre-query RAG (passport-only filter) → get `das_address` → resolve to folder
 **6. Improve Q4-class passport summaries.**  
 Documents that answer "list everything in category X" questions should have summaries that explicitly state item count and enumerate key items (e.g., "Contains 9 active ULS project runbooks covering NetBird ZTNA, Zabbix, UniFi migration...").
 
+**7. Use optional tags selectively — apply to out-of-context docs only.**  
+Tags help targeted enumeration (Q4: -2 turns, Q8: -1.4 turns) but cost broad navigation (Q1: +4 turns, Q3: +3 turns). Apply to client/market-scoped docs that regularly surface in git log, search results, tickets, or email — where the address hierarchy is not visible. Do not tag internal admin, product, or marketing docs where in-corpus scanning is the primary access pattern. Each tagged file adds parsing cost to every `ls` scan of its folder.
+
 ---
 
 ## Descriptive Corpus Design
@@ -184,8 +187,8 @@ Build script: `~/Projects/das-nav-test/build-descriptive.py`
 ## Test Infrastructure
 
 - **Harness:** `~/Projects/das-nav-test/nav-test.py`
-- **Corpus builder:** `~/Projects/das-nav-test/build-descriptive.py`
+- **Corpus builders:** `~/Projects/das-nav-test/build-descriptive.py`, `~/Projects/das-nav-test/build-das-v2.py`
 - **Embedding:** `~/Projects/das-nav-test/rag-test.py`
 - **Report generator:** `~/Projects/das-nav-test/report.py`
-- **Run data:** `~/Projects/das-nav-test/results/` (26 runs)
+- **Run data:** `~/Projects/das-nav-test/results/` (32 runs)
 - **ChromaDB:** `~/Projects/sage/.claude/rag/chroma_db` — `das_nav_test_nomic`, `das_nav_test_mxbai`
