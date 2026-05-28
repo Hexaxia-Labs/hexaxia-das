@@ -16,8 +16,14 @@ SKIP_NAMES = {
     MANIFEST_FILENAME,
     "das.migration.md",
     "README.md",
+    "AGENT_CONTEXT.md",
+    "CLAUDE.md",
     ".git",
 }
+
+# Root-level files that belong to the repo, not the DAS corpus
+ROOT_SKIP_SUFFIXES = {".sh", ".md", ".txt"}
+ROOT_SKIP_NAMES = {"GOOGLE-DRIVE-SYNC.md", "drive-sync.sh"}
 
 
 @dataclass
@@ -38,11 +44,26 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
 
     for item in sorted(corpus_root.rglob("*")):
         rel = item.relative_to(corpus_root)
+
+        # Skip hidden paths and known special filenames anywhere in tree
         if any(
             part.startswith(".") or part in SKIP_NAMES
             for part in rel.parts
         ):
             continue
+
+        # Skip underscore-prefixed items (drafts, logs, private folders)
+        if any(part.startswith("_") for part in rel.parts):
+            continue
+
+        # Skip Windows Zone.Identifier ADS files
+        if ":Zone.Identifier" in item.name:
+            continue
+
+        # Skip root-level non-corpus files (shell scripts, repo docs, etc.)
+        if item.parent == corpus_root and item.is_file():
+            if item.name in ROOT_SKIP_NAMES or item.suffix in ROOT_SKIP_SUFFIXES:
+                continue
 
         address = _extract_address(item.name)
 
