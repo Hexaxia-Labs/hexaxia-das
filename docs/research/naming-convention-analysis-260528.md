@@ -103,9 +103,11 @@ The tag vocabulary in `das.config.yaml` defines valid codes for the corpus. Any 
 
 DAS v2 corpus test result: Q6 (structural orientation) dropped from 13.3 turns (das) to 9.7 (das-v2), matching the original corpus baseline. The type slug lets agents characterise document type from `ls` output without opening files. Aggregate performance is neutral. Type slug is now required in spec section 5.2.
 
-### 3. Folder naming — resolved, no change
+### 3. Folder naming — resolved, address in folder name not required
 
-`02-Clients/02.01-ULS/02.01.04-Projects/` (Title-Cased labels) stays. Mixed-case labels are visually distinct from lowercase files in `ls` output. No change proposed.
+real-v3 test (live corpus, DAS v3 filenames, plain folder names like `Projects` and `Deliverables`) scored **77.7 turns** — statistically identical to the full DAS test corpus with address-prefixed folder names. The address in the filename carries the jump-table signal on its own; the folder does not need to repeat it.
+
+**Practical implication:** DAS adoption cost is filename renames only. Folder restructuring adds no measurable navigation value and is not required. Existing folder hierarchies with plain labels are fully compatible with DAS v3 filenames.
 
 ---
 
@@ -134,6 +136,18 @@ Build script: `~/Projects/das-nav-test/build-das-v2.py`
 - Q3 cross-area: 16.7 vs 14.0 das-v2 — same effect
 
 **Verdict:** Tag is a human/out-of-context feature, not an in-corpus navigation feature. It earns its place for docs that travel; it costs turns for docs that stay in context. Use selectively.
+
+### Real v3 — DAS v3 filenames on live corpus, plain folder names
+
+- Live `Hexaxia-Technologies` corpus after DAS v3 rename (56 files)
+- Plain folder names (`Projects`, `Deliverables`) — no address prefix in folders
+- No passports, no manifest
+- 3 runs, 8 questions
+- Aggregate: **77.7 turns** — statistically identical to original (76.7) and das (75.3)
+- All 8 questions within normal variance of the DAS test corpus results
+- Q8 misrouting: 8.3 vs 5.3 das-v3 — slight regression without passports to anchor type metadata
+
+**Verdict:** Filename address alone is sufficient for agent navigation. Folder addresses are redundant. DAS adoption requires only file renames — existing folder hierarchy does not need to change.
 
 ---
 
@@ -166,4 +180,5 @@ All decisions incorporated into `docs/spec.md` v0.2.
 | Keep descriptors specific (not over-truncated) | **In spec §5.3 rule 3** — Q1 regression traced to truncation |
 | Client code → optional tag vocabulary | **In spec §4, §5.2, §5.3** — corpus-defined `tags:` block, one optional tag per file. DAS v3 test: tag helps targeted enumeration (Q4 -2 turns) but costs broad navigation (Q1 +4, Q3 +3). Use selectively. |
 | Controlled type vocabulary (15 types) | **In spec §5.4** — hard cap, new types require explicit addition |
+| Folder address prefix not required | **Confirmed** — real-v3 test: plain folder names + DAS v3 filenames = 77.7 turns (vs 75.3 das). Filename address alone carries the signal. |
 | Passport as SQL schema foundation | Noted — out of scope until naming stabilizes |
