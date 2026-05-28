@@ -1,7 +1,7 @@
 # Hexaxia DAS: Document Addressing Standard
-## Design Specification v0.1
+## Design Specification v0.2
 
-**Date:** 2026-05-27
+**Date:** 2026-05-28
 **Status:** Draft
 **Author:** Aaron Lamb / Hexaxia Technologies
 
@@ -82,12 +82,17 @@ Each DAS corpus has a single configuration file at its root: `das.config.yaml`. 
 # das.config.yaml
 version: "1.0"
 corpus: hexaxia-technologies
-initialized: 2026-05-27
-org: HXT                    # optional - omit to exclude from filenames
-context_type: client        # "client" | "project" | "dept" | "none"
-date_format: YYMMDD         # optional - omit to exclude dates from filenames
+initialized: 2026-05-28
+org: HXT                    # optional - omit for single-org corpora
 address_separator: "."      # always "." - reserved, do not change
 manifest: das.manifest.yaml
+
+tags:                       # optional - controlled vocabulary for filename tags
+  ULS: "United Life Services client"
+  PN: "Pax Nocturna client"
+  TT: "Trinidad market"
+  LABS: "Hexaxia Labs / OSS"
+  MKTG: "Marketing internal"
 ```
 
 ### 4.1 Configuration Fields
@@ -97,9 +102,8 @@ manifest: das.manifest.yaml
 | `version` | Yes | Hexaxia DAS spec version this corpus was initialized against |
 | `corpus` | Yes | Unique slug identifying this document corpus |
 | `initialized` | Yes | Date the corpus was created (YYYY-MM-DD) |
-| `org` | No | Org code prepended to filenames (e.g. `HXT`). Omit to exclude. |
-| `context_type` | No | What the secondary identifier represents: `client`, `project`, `dept`, or `none` |
-| `date_format` | No | Date format for filenames. Currently only `YYMMDD` is supported. Omit to make dates optional. |
+| `org` | No | Org code prepended to filenames (e.g. `HXT`). Omit for single-org corpora — adds no signal when every file belongs to the same org. |
+| `tags` | No | Controlled vocabulary for optional per-file tags. Each entry is a code (2-5 uppercase characters) and a human description. Tags appear in filenames as a primary disambiguation signal. See Section 5.3. |
 | `address_separator` | Yes | Always `.` - reserved for future federation use. Do not change. |
 | `manifest` | Yes | Path to the corpus manifest file |
 
@@ -107,7 +111,7 @@ manifest: das.manifest.yaml
 
 **Changing `das.config.yaml` after corpus initialization is a breaking change.**
 
-Every filename, every manifest entry, every index, and every agent or tool that operates on the corpus depends on the naming format being stable. Changing `org`, `context_type`, or `date_format` after files exist means every filename in the corpus is now wrong relative to the schema.
+Every filename, every manifest entry, every index, and every agent or tool that operates on the corpus depends on the naming format being stable. Changing `org` or the `tags` vocabulary after files exist means every filename in the corpus is now wrong relative to the schema.
 
 If a breaking change is unavoidable:
 1. Document the change and the reason in a `das.migration.md` file at the corpus root
@@ -116,6 +120,8 @@ If a breaking change is unavoidable:
 4. Notify any agents, indexes, or integrations that reference the corpus
 
 There is no safe "quick change" to the corpus config. Treat it with the same respect as a database schema migration.
+
+**Adding a new tag to the vocabulary is non-breaking** — existing filenames are unchanged and the new code is immediately available for new files. Renaming or removing an existing tag code is breaking.
 
 ---
 
@@ -139,7 +145,7 @@ There is no safe "quick change" to the corpus config. Treat it with the same res
 ### 5.2 Files
 
 ```
-{address}-[{ORG}-][{CONTEXT}-]{descriptor}[-{YYMMDD}].ext
+{address}-[{TAG}-]{type}-{descriptor}.ext
 ```
 
 Components:
@@ -147,39 +153,65 @@ Components:
 | Component | Required | Governed by | Example |
 |---|---|---|---|
 | `address` | Yes | Always | `02.01.03` |
-| `ORG` | Config | `org` field in config | `HXT` |
-| `CONTEXT` | Config | `context_type` field in config | `ULS`, `MKTG` |
-| `descriptor` | Yes | Author | `msa-amendment` |
-| `YYMMDD` | Optional | `date_format` field in config | `260527` |
+| `TAG` | Optional | `tags` vocabulary in config | `ULS`, `TT`, `LABS` |
+| `type` | Yes | Controlled vocabulary (see 5.4) | `runbook`, `spec`, `lead` |
+| `descriptor` | Yes | Author | `netbird-ztna`, `msa-amendment` |
 
 Examples:
 
 ```
-# Full config (org + context + date):
-02.01.03-HXT-ULS-msa-amendment-260527.md
+# Client-scoped doc with tag:
+02.01.04-ULS-runbook-netbird-ztna.md
 
-# No date:
-02.01.03-HXT-ULS-msa-amendment.md
+# No tag needed — address is unambiguous:
+07.08-spec-hexpublish.md
 
-# No org (org omitted in config):
-02.01.03-ULS-msa-amendment-260527.md
+# Market tag:
+03.07.02-TT-lead-shine-distributors.md
 
-# No context (context_type: none):
-00.01.01-HXT-articles-of-incorporation-260115.md
+# OSS/Labs tag:
+04.05.01.03-LABS-post-hexaxia-labs-launch.md
 
-# Internal doc, no org, no context:
-00.01.01-articles-of-incorporation-260115.md
+# Admin doc, no tag:
+00-reference-company-profile.md
 ```
 
 ### 5.3 Naming Rules
 
-1. Addresses always precede the human components
-2. Folder labels are Title-Cased and hyphenated (`Business-Registration`, `Q2-2026`). File descriptors are lowercase and hyphenated (`msa-amendment`, `q2-social-brief`). No spaces, no underscores, no camelCase.
-3. Descriptor is 2–4 words: concise and meaningful (`msa-amendment`, `q2-social-brief`, `tax-return`)
-4. Date is `YYMMDD` when present - never `YYYY-MM-DD` in filenames (length)
-5. File extension is always lowercase (`.md`, `.pdf`, `.docx`)
-6. No sequence numbers - formal document IDs belong in document metadata or passports, not filenames
-7. ORG and CONTEXT codes are uppercase (2–5 characters)
+1. Addresses always precede the human components.
+2. Folder labels are Title-Cased and hyphenated (`Business-Registration`, `Q2-2026`). File descriptors are lowercase and hyphenated (`netbird-ztna`, `q2-social-brief`). No spaces, no underscores, no camelCase.
+3. Descriptor is 2–4 words: concise and specific. Do not truncate words that carry query signal — a descriptor that matches likely search terms is preferable to a shorter one that doesn't.
+4. File extension is always lowercase (`.md`, `.pdf`, `.docx`).
+5. No sequence numbers in filenames. Formal document IDs belong in passports, not filenames.
+6. TAG codes are uppercase (2–5 characters). Tags are optional — use one when it adds disambiguation signal not already provided by the address. Do not tag every file; tag files that are frequently seen out of context (search results, git log, email attachments) where the address alone is ambiguous.
+7. One tag per file maximum. Multiple classification dimensions belong in the passport `tags` field.
+8. Dates do not belong in filenames. Created and modified dates belong in the passport `created` and `modified` fields.
+
+### 5.4 Type Vocabulary
+
+Every DAS file carries a type slug as the second component after the address (and optional tag). The type communicates document intent at a glance without opening the file — useful for agents scanning `ls` output and humans navigating unfamiliar folders.
+
+The type vocabulary is a **hard-capped controlled list**. Any document that doesn't fit an existing type forces a naming decision rather than accumulating informal drift. New types require explicit addition to this table.
+
+| Type | Use |
+|---|---|
+| `runbook` | Operational procedure, step-by-step execution guide |
+| `plan` | Project plan or roadmap |
+| `spec` | Product or technical specification |
+| `design` | Design document or architecture |
+| `strategy` | Business or practice strategy |
+| `playbook` | Sales or marketing playbook |
+| `proposal` | Client proposal |
+| `contract` | Legal agreement |
+| `report` | Findings, analysis, or audit output |
+| `catalog` | Product or service catalog |
+| `lead` | Sales lead record |
+| `post` | Social media post |
+| `template` | Reusable document template |
+| `reference` | Reference material — informational, not actionable |
+| `procedure` | Formal SOP |
+
+The type in the filename is a navigation signal only. It is not a substitute for the `type` field in the document passport, which carries the authoritative value for indexing and querying.
 
 ---
 
@@ -343,15 +375,17 @@ JD's two-level limit is not a flaw - for personal use it is exactly right. Hexax
 
 **Names**
 5. Node names fuse address and label: `{address}-{Label}` for folders, `{address}-{components}.ext` for files.
-6. All name components are lowercase and hyphenated. ORG and CONTEXT codes are uppercase.
-7. No sequence numbers in filenames. Formal document IDs belong in document metadata.
-8. Date stamps are optional. When present, format is `YYMMDD`.
+6. File format: `{address}-[{TAG}-]{type}-{descriptor}.ext`. Type is required. Tag is optional — one per file, from the corpus tag vocabulary.
+7. All file descriptors and folder labels are lowercase and hyphenated. TAG codes are uppercase (2–5 characters).
+8. No sequence numbers in filenames. Formal document IDs belong in passports.
+9. Dates do not belong in filenames. Use passport `created`/`modified` fields.
+10. One tag per file. Additional classification dimensions belong in the passport.
 
 **Schema**
-9. Every corpus has a `das.config.yaml` at its root. It is written once and treated as immutable.
-10. Every corpus has a `das.manifest.yaml`. It maps every address to its label, description, and parent.
-11. Changing the corpus config after initialization is a breaking change. Document it. Migrate fully.
-12. Retiring a node: set `deprecated: true` in the manifest. Never delete the entry. Never reuse the address.
+11. Every corpus has a `das.config.yaml` at its root. It is written once and treated as immutable.
+12. Every corpus has a `das.manifest.yaml`. It maps every address to its label, description, and parent.
+13. Changing the corpus config after initialization is a breaking change. Document it. Migrate fully. Exception: adding a new tag to the vocabulary is non-breaking.
+14. Retiring a node: set `deprecated: true` in the manifest. Never delete the entry. Never reuse the address.
 
 **Depth**
 13. Add a level when the current level has grown too broad and natural sub-groups exist.
@@ -378,4 +412,4 @@ The `address_separator` field in `das.config.yaml` is reserved for future federa
 
 ---
 
-*Hexaxia DAS v0.1 | Hexaxia Technologies | 2026-05-27*
+*Hexaxia DAS v0.2 | Hexaxia Technologies | 2026-05-28*
