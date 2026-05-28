@@ -91,6 +91,7 @@ tags:                       # optional - controlled vocabulary for filename tags
   ULS: "United Life Services client"
   PN: "Pax Nocturna client"
   TT: "Trinidad market"
+  IN: "Indiana market"
   LABS: "Hexaxia Labs / OSS"
   MKTG: "Marketing internal"
 ```
