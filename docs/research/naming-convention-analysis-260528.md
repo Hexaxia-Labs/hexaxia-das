@@ -25,7 +25,7 @@ The descriptive corpus performed 30% worse than DAS on agent navigation (99.7 vs
 |---|---|---|---|
 | Numeric address prefix | **Critical.** Acts as jump table — agents immediately discard irrelevant areas. +30% regression without it. | Learnable. Not intuitive at first, but consistent once mapped. | Routing key via `das_address` in passport. Filename numeric prefix reinforces the signal. |
 | Type slug in filename | **Helpful.** Agent can characterize doc type from `ls` without reading file. Proven in Q6-class questions. | **Immediately useful.** Scan any folder and know what you're looking at. | Appears in RAG result snippets — reinforces semantic match. |
-| Optional tag (corpus vocabulary) | Useful for disambiguation when address alone is ambiguous. Adds client/market/product signal in `ls` and search results. | **Useful when file travels out of context** — git log, search results, email attachments. Not needed for every file. | Tag codes are short and distinct — unlikely to distort RAG matching. |
+| Optional tag (corpus vocabulary) | Mixed. Helps targeted queries (Q4 enumeration: 13.0 → 11.3 turns with tags). Hurts broad navigation (Q1: 14.3 → 18.3, Q3: 14.0 → 16.7) — adds tokens to every `ls` line. Net: use sparingly on docs that travel out of context. | **Useful when file travels out of context** — git log, search results, email attachments. Not needed for every file. | Tag codes are short and distinct — unlikely to distort RAG matching. |
 | Date in filename | Noise. No navigation or routing value. | Noise. Makes files look stale. Accumulates over time. | Noise. Passport `created`/`modified` fields own this. |
 | HXT / org prefix | Noise. Every file in a single-org corpus already belongs to that org. | Noise. | Noise. |
 | Passport summary | N/A (summary lives in the passport block, not the filename). | N/A. | **The actual retrieval signal.** Quality of the `summary` field determines RAG accuracy — not the filename. |
@@ -59,6 +59,8 @@ The descriptive corpus performed 30% worse than DAS on agent navigation (99.7 vs
 ```
 
 Tag is applied selectively — client-scoped and market-scoped docs benefit; internal admin and product docs typically don't need it.
+
+**Tag guidance from das-v3 test:** Apply tags to docs that regularly surface in git log, search results, tickets, or email — where the address hierarchy isn't visible. Do not tag broadly: each tagged file adds parsing cost to every `ls` scan of its folder.
 
 ---
 
@@ -107,21 +109,31 @@ DAS v2 corpus test result: Q6 (structural orientation) dropped from 13.3 turns (
 
 ---
 
-## DAS v2 Corpus Test Results
+## Corpus Test Results
 
-Built `Hexaxia-Technologies-DAS-v2`:
-- Same content as DAS corpus
-- Same passports, same manifest
-- All files renamed to `{address}-{type}-{descriptor}.ext`
-- 3 runs, same 8 questions
+### DAS v2 — `{address}-{type}-{descriptor}.ext`
 
-Results vs DAS:
-- Aggregate turns: 78.7 vs 75.3 — neutral (within variance)
-- Q6 structural orientation: **9.7 vs 13.3** — confirmed improvement (+3.6 turns, -27%)
-- Q1 deep lookup: 14.3 vs 7.0 — regression (descriptor truncation; "netbird-ztna-deployment" → "netbird-ztna" loses search signal)
+- Same content, passports, manifest as DAS corpus
+- 3 runs, 8 questions
+- Aggregate: 78.7 turns vs 75.3 das — neutral (within variance)
+- Q6 structural orientation: **9.7 vs 13.3** — confirmed improvement (-27%)
+- Q1 deep lookup: 14.3 vs 7.0 — regression (descriptor truncation: "netbird-ztna-deployment" → "netbird-ztna")
 - All other questions: neutral
 
 Build script: `~/Projects/das-nav-test/build-das-v2.py`
+
+### DAS v3 — `{address}-[{TAG}-]{type}-{descriptor}.ext`
+
+- Same as v2 with tags applied selectively: `ULS` on 02.01.xx, `PN` on 02.02.xx, `TT`/`IN` on market leads
+- 3 runs, 8 questions
+- Aggregate: 85.0 turns vs 78.7 das-v2 — **worse** (+8%)
+- Q4 enumeration: **11.3 vs 13.0** das-v2 — tag confirms client scope from `ls`, fewer opens
+- Q6 structural: **9.7** — holds das-v2 gain, no regression
+- Q8 misrouting: **5.3 vs 6.7** das-v2 — tag reduces false-positive folder exploration
+- Q1 direct lookup: 18.3 vs 14.3 das-v2 — tag adds parsing cost on broad scans
+- Q3 cross-area: 16.7 vs 14.0 das-v2 — same effect
+
+**Verdict:** Tag is a human/out-of-context feature, not an in-corpus navigation feature. It earns its place for docs that travel; it costs turns for docs that stay in context. Use selectively.
 
 ---
 
@@ -152,6 +164,6 @@ All decisions incorporated into `docs/spec.md` v0.2.
 | Keep numeric address prefix | **In spec** — proven critical, +30% regression without it |
 | Add type slug (required) | **In spec §5.2, §5.4** — DAS v2 test: Q6 13.3 → 9.7 turns, neutral aggregate |
 | Keep descriptors specific (not over-truncated) | **In spec §5.3 rule 3** — Q1 regression traced to truncation |
-| Client code → optional tag vocabulary | **In spec §4, §5.2, §5.3** — corpus-defined `tags:` block, one optional tag per file |
+| Client code → optional tag vocabulary | **In spec §4, §5.2, §5.3** — corpus-defined `tags:` block, one optional tag per file. DAS v3 test: tag helps targeted enumeration (Q4 -2 turns) but costs broad navigation (Q1 +4, Q3 +3). Use selectively. |
 | Controlled type vocabulary (15 types) | **In spec §5.4** — hard cap, new types require explicit addition |
 | Passport as SQL schema foundation | Noted — out of scope until naming stabilizes |
