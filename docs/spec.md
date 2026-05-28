@@ -1,5 +1,5 @@
 # Hexaxia DAS: Document Addressing Standard
-## Design Specification v0.2
+## Design Specification v0.3
 
 **Date:** 2026-05-28
 **Status:** Draft
@@ -104,7 +104,7 @@ tags:                       # optional - controlled vocabulary for filename tags
 | `corpus` | Yes | Unique slug identifying this document corpus |
 | `initialized` | Yes | Date the corpus was created (YYYY-MM-DD) |
 | `org` | No | Org code prepended to filenames (e.g. `HXT`). Omit for single-org corpora — adds no signal when every file belongs to the same org. |
-| `tags` | No | Controlled vocabulary for optional per-file tags. Each entry is a code (2-5 uppercase characters) and a human description. Tags appear in filenames as a primary disambiguation signal. See Section 5.3. |
+| `tags` | No | Controlled vocabulary for optional per-file tags. Each entry is a code (2-5 uppercase characters) and a human description. Tags serve three purposes: out-of-context readability, corpus-wide discovery via `find . -name '*-TAG-*'`, and in-folder disambiguation. See §5.3 rule 6. |
 | `address_separator` | Yes | Always `.` - reserved for future federation use. Do not change. |
 | `manifest` | Yes | Path to the corpus manifest file |
 
@@ -184,7 +184,12 @@ Examples:
 3. Descriptor is 2–4 words: concise and specific. Do not truncate words that carry query signal — a descriptor that matches likely search terms is preferable to a shorter one that doesn't.
 4. File extension is always lowercase (`.md`, `.pdf`, `.docx`).
 5. No sequence numbers in filenames. Formal document IDs belong in passports, not filenames.
-6. TAG codes are uppercase (2–5 characters). Tags are optional — use one when it adds disambiguation signal not already provided by the address. Do not tag every file; tag files that are frequently seen out of context (search results, git log, email attachments) where the address alone is ambiguous.
+6. TAG codes are uppercase (2–5 characters). Tags are optional — apply one when any of the following is true:
+   - **Out-of-context readability:** the file regularly surfaces in git log, search results, tickets, or email where the folder hierarchy is not visible, and the address alone is ambiguous to a human.
+   - **Corpus-wide discovery:** an agent may need to enumerate all documents for this entity across the full corpus. Filename tags enable `find . -name '*-TAG-*' -type f` — a single command that returns every tagged file regardless of folder location. Benchmark result: 11.7 vs 26.3 turns (-56%) for discovery queries when agents use this pattern.
+   - **In-folder disambiguation:** multiple clients or market segments appear in the same folder and the agent needs to filter by scope without opening each file.
+
+   Do not tag broadly. Each tagged file adds one parsing token to every `ls` scan of its folder — this is measurably costly on broad navigation passes (+4 turns on direct lookup, +3 turns on cross-area queries in benchmark tests). Internal admin, product, and marketing docs where the folder already provides unambiguous context do not need tags.
 7. One tag per file maximum. Multiple classification dimensions belong in the passport `tags` field.
 8. Dates do not belong in filenames. Created and modified dates belong in the passport `created` and `modified` fields.
 
@@ -376,7 +381,7 @@ JD's two-level limit is not a flaw - for personal use it is exactly right. Hexax
 
 **Names**
 5. Node names fuse address and label: `{address}-{Label}` for folders, `{address}-{components}.ext` for files.
-6. File format: `{address}-[{TAG}-]{type}-{descriptor}.ext`. Type is required. Tag is optional — one per file, from the corpus tag vocabulary.
+6. File format: `{address}-[{TAG}-]{type}-{descriptor}.ext`. Type is required. Tag is optional — one per file, from the corpus tag vocabulary. Apply when the file travels out of context, belongs to an entity set agents may need to enumerate, or needs in-folder disambiguation. See §5.3 rule 6 for full criteria.
 7. All file descriptors and folder labels are lowercase and hyphenated. TAG codes are uppercase (2–5 characters).
 8. No sequence numbers in filenames. Formal document IDs belong in passports.
 9. Dates do not belong in filenames. Use passport `created`/`modified` fields.
@@ -403,6 +408,8 @@ Hexaxia DAS is designed as a standalone standard. The following integrations are
 
 The `das.manifest.yaml` is the foundation for agent navigation. An AI agent that loads the manifest can answer "where does X live?" without traversing the filesystem. The `agent_hint` field on manifest nodes allows human authors to prime the agent with routing context at schema-build time. Full agent navigation spec is deferred.
 
+**Filename tags as a discovery primitive.** When a corpus has tagged files and agents have `find` available, `find . -name '*-TAG-*' -type f` provides corpus-wide enumeration in a single command — no manifest required, no folder traversal needed. Benchmark result: -56% turns vs blind folder navigation on discovery queries. This pattern works today without any additional infrastructure; the tag vocabulary in `das.config.yaml` is the only prerequisite. Agent system prompts should explain the tag convention and when to use `find` vs `ls`.
+
 ### 10.2 Document Passports
 
 A Document Passport is a portable metadata container for individual documents. The DAS address is a natural primary key for passports - every document with a DAS address can carry a passport that includes that address as its location identifier. This makes documents queryable by address in a passport index without filesystem traversal. Document Passport integration spec is deferred.
@@ -413,4 +420,4 @@ The `address_separator` field in `das.config.yaml` is reserved for future federa
 
 ---
 
-*Hexaxia DAS v0.2 | Hexaxia Technologies | 2026-05-28*
+*Hexaxia DAS v0.3 | Hexaxia Technologies | 2026-05-28*

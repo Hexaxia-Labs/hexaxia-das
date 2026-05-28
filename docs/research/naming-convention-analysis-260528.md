@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-28  
 **Author:** Aaron Lamb  
-**Status:** Decisions incorporated into `docs/spec.md` v0.2  
+**Status:** Decisions incorporated into `docs/spec.md` v0.3  
 **Feeds into:** `docs/spec.md` — decisions reflected in current spec
 
 ---
