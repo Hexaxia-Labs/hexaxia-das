@@ -2,8 +2,8 @@
 
 **Date:** 2026-05-28  
 **Author:** Aaron Lamb  
-**Status:** Design proposal — pending empirical validation (DAS v2 corpus test)  
-**Feeds into:** `docs/spec.md` — future revision of filename format
+**Status:** Decisions incorporated into `docs/spec.md` v0.2  
+**Feeds into:** `docs/spec.md` — decisions reflected in current spec
 
 ---
 
@@ -25,43 +25,46 @@ The descriptive corpus performed 30% worse than DAS on agent navigation (99.7 vs
 |---|---|---|---|
 | Numeric address prefix | **Critical.** Acts as jump table — agents immediately discard irrelevant areas. +30% regression without it. | Learnable. Not intuitive at first, but consistent once mapped. | Routing key via `das_address` in passport. Filename numeric prefix reinforces the signal. |
 | Type slug in filename | **Helpful.** Agent can characterize doc type from `ls` without reading file. Proven in Q6-class questions. | **Immediately useful.** Scan any folder and know what you're looking at. | Appears in RAG result snippets — reinforces semantic match. |
+| Optional tag (corpus vocabulary) | Useful for disambiguation when address alone is ambiguous. Adds client/market/product signal in `ls` and search results. | **Useful when file travels out of context** — git log, search results, email attachments. Not needed for every file. | Tag codes are short and distinct — unlikely to distort RAG matching. |
 | Date in filename | Noise. No navigation or routing value. | Noise. Makes files look stale. Accumulates over time. | Noise. Passport `created`/`modified` fields own this. |
 | HXT / org prefix | Noise. Every file in a single-org corpus already belongs to that org. | Noise. | Noise. |
-| Client code in filename | Redundant with folder path and address hierarchy. | Useful only when file is seen out of context (search results, git log, email). | Redundant with `das_address` in passport. |
 | Passport summary | N/A (summary lives in the passport block, not the filename). | N/A. | **The actual retrieval signal.** Quality of the `summary` field determines RAG accuracy — not the filename. |
 
-**Net conclusion:** the address and type slug earn their place. Everything else is noise or handled better elsewhere.
+**Net conclusion:** address, type slug, and optional tag earn their place. Dates and org prefix are noise handled better elsewhere. Additional classification beyond one tag belongs in the passport.
 
 ---
 
-## Proposed Format
+## Adopted Format
 
 ```
-{address}-{type}-{descriptor}.ext
+{address}-[{TAG}-]{type}-{descriptor}.ext
 ```
 
 | Token | Rules |
 |---|---|
 | `{address}` | DAS dotted numeric address (e.g., `02.01.04`). Required. |
+| `{TAG}` | One optional tag from the corpus vocabulary defined in `das.config.yaml`. Uppercase 2-5 chars. Use when the file is regularly seen out of context and the address alone doesn't provide enough signal. |
 | `{type}` | Controlled vocabulary slug (see below). Required. |
-| `{descriptor}` | 2-4 word kebab-case subject. No articles, conjunctions, dates, or org codes. |
+| `{descriptor}` | 2-4 word kebab-case subject. Specific enough to match likely search terms — do not over-truncate. No articles, conjunctions, dates, or org codes. |
 
-### Current vs proposed
+### Original vs adopted
 
 ```
-02.01.04-HXT-ULS-netbird-ztna-deployment-260509.md  →  02.01.04-runbook-netbird-ztna.md
+02.01.04-HXT-ULS-netbird-ztna-deployment-260509.md  →  02.01.04-ULS-runbook-netbird-ztna-deploy.md
 07.08-HXT-hexpublish-product-spec-260426.md          →  07.08-spec-hexpublish.md
 04.05.02.03-HXT-quiet-erosion-260512.md              →  04.05.02.03-post-quiet-erosion.md
-03.07.02-HXT-shine-distributors-260518.md            →  03.07.02-lead-shine-distributors.md
+03.07.02-HXT-shine-distributors-260518.md            →  03.07.02-TT-lead-shine-distributors.md
 07.07-HXT-security-compliance-product-catalog.md     →  07.07-catalog-security-compliance.md
 04.06-HXT-playbook-web-discovery.md                  →  04.06-playbook-web-discovery.md
 ```
 
+Tag is applied selectively — client-scoped and market-scoped docs benefit; internal admin and product docs typically don't need it.
+
 ---
 
-## Controlled Type Vocabulary
+## Type Vocabulary
 
-Hard cap at 15 types. Anything that doesn't fit forces a naming decision rather than accumulating drift.
+Hard cap at 15 types — now in spec section 5.4. Anything that doesn't fit forces a naming decision rather than accumulating drift.
 
 | Type | Use |
 |---|---|
@@ -83,28 +86,24 @@ Hard cap at 15 types. Anything that doesn't fit forces a naming decision rather 
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-### 1. Client code — drop or keep?
+### 1. Client code — resolved via tag vocabulary
 
-The address scopes the client. `03.07.02-lead-shine-distributors.md` in `03-Sales/03.07-Leads/03.07.02-Trinidad/` is unambiguous in context. But in a git log, search result, or email attachment the file has no client signal without knowing the DAS map.
+The original question was binary: drop the client code or keep it. The spec resolves this more cleanly with an optional tag vocabulary. Client codes are one use of the tag slot — not a special feature. A file that travels out of context (git log, search result, email attachment) gets a tag if the address alone is ambiguous. A file that stays in context doesn't need one.
 
-Options:
-- **Drop entirely.** Address handles it. Cleaner filenames.
-- **Keep for client-scoped docs only.** `02.01.04-ULS-runbook-netbird-ztna.md` vs `07.08-spec-hexpublish.md`.
+`02.01.04-ULS-runbook-netbird-ztna-deploy.md` — tag justified; this surfaces in git log, tickets, handoff emails.  
+`07.08-spec-hexpublish.md` — no tag needed; product is clear from the `07.08-HexPublish` folder.
 
-Not yet tested empirically. Low-cost experiment: build a variant with and without client codes and compare Q4/Q5-class questions.
+The tag vocabulary in `das.config.yaml` defines valid codes for the corpus. Any dimension can be a tag — client, market, product, team — as long as it's in the vocabulary.
 
-### 2. Does the type slug consistently improve structural orientation? CONFIRMED.
+### 2. Type slug — CONFIRMED
 
-DAS v2 corpus test result: Q6 (structural orientation) dropped from 13.3 turns (das) to 9.7 (das-v2), matching the original corpus baseline of 9.7. The type slug lets agents characterise document type from `ls` output without opening files. Aggregate performance is neutral — no regression across other question types.
+DAS v2 corpus test result: Q6 (structural orientation) dropped from 13.3 turns (das) to 9.7 (das-v2), matching the original corpus baseline. The type slug lets agents characterise document type from `ls` output without opening files. Aggregate performance is neutral. Type slug is now required in spec section 5.2.
 
-### 3. Folder naming — address-prefixed labels or bare descriptors?
+### 3. Folder naming — resolved, no change
 
-Current: `02-Clients/02.01-ULS/02.01.04-Projects/`  
-Alternative: `02-clients/02.01-uls/02.01.04-projects/` (lowercase)
-
-Mixed-case label folders are visually distinct from files in `ls` output. Current convention is fine — no change proposed.
+`02-Clients/02.01-ULS/02.01.04-Projects/` (Title-Cased labels) stays. Mixed-case labels are visually distinct from lowercase files in `ls` output. No change proposed.
 
 ---
 
@@ -144,13 +143,15 @@ This is out of scope while the ML/human balance is still being calibrated — th
 
 ## Status
 
+All decisions incorporated into `docs/spec.md` v0.2.
+
 | Decision | Status |
 |---|---|
-| Drop dates from filenames | Confirmed |
-| Drop HXT prefix | Confirmed |
-| Keep numeric address prefix | Confirmed — proven critical |
-| Add type slug | **Confirmed — DAS v2 test: Q6 13.3 → 9.7 turns, neutral aggregate** |
-| Keep descriptors specific (not over-truncated) | **Confirmed — Q1 regression traced to descriptor truncation** |
-| Drop client code | Open — lean toward drop, needs test |
-| Controlled type vocabulary (~15) | Proposed — list above is v1 draft |
+| Drop dates from filenames | **In spec** — passport `created`/`modified` owns this |
+| Drop HXT / org prefix for single-org corpora | **In spec** — `org` field optional, noted as noise for single-org use |
+| Keep numeric address prefix | **In spec** — proven critical, +30% regression without it |
+| Add type slug (required) | **In spec §5.2, §5.4** — DAS v2 test: Q6 13.3 → 9.7 turns, neutral aggregate |
+| Keep descriptors specific (not over-truncated) | **In spec §5.3 rule 3** — Q1 regression traced to truncation |
+| Client code → optional tag vocabulary | **In spec §4, §5.2, §5.3** — corpus-defined `tags:` block, one optional tag per file |
+| Controlled type vocabulary (15 types) | **In spec §5.4** — hard cap, new types require explicit addition |
 | Passport as SQL schema foundation | Noted — out of scope until naming stabilizes |
