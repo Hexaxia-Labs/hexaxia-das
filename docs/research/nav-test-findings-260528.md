@@ -4,7 +4,7 @@
 **Author:** Aaron Lamb  
 **Corpus:** Hexaxia-Technologies-DAS (55 files)  
 **Test harness:** `~/Projects/das-nav-test/`  
-**Questions:** 8 representative navigation tasks  
+**Questions:** 8 navigation tasks (Q1-Q8) + 4 tag discovery tasks (D1-D4)  
 **Agent model:** claude-haiku-4-5-20251001  
 
 ---
@@ -37,6 +37,11 @@ Eleven variants total were tested across four corpora.
 | **das-manifest-passport** | das | Manifest + passports combined |
 | **rag-nav (nomic)** | das | RAG pre-query (nomic-embed-text) → DAS address → navigate |
 | **rag-nav-mxbai** | das | RAG pre-query (mxbai-embed-large) → DAS address → navigate |
+| **tag-fn-blind** | real | Blind navigation on real-v3 corpus — discovery baseline, no tag guidance |
+| **tag-fn** | real | `find . -name '*-TAG-*'` filename tag search — agent uses tag codes in filenames |
+| **tag-pp** | das-v2 | `grep -rl 'tag' .` passport tag search — agent reads passport `tags:` fields |
+
+14 variants total. tag-fn/tag-pp ran against 4 discovery questions (D1-D4); all other variants ran against 8 navigation questions (Q1-Q8).
 
 RAG queries exclusively passport chunks — each formatted as `[passport] {title} | type:{type} status:{status} address:{das_address}\n{summary}`. Content chunks were embedded but not used in rag-nav queries.
 
@@ -154,6 +159,22 @@ The address prefix in the filename provides the jump-table signal on its own. Ag
 
 **Practical implication:** You do not need to rename folder hierarchies to adopt DAS. Renaming files to the `{address}-{type}-{descriptor}` format is the entire adoption cost. Folder renames are optional and add no measurable navigation value.
 
+### 12. Filename tag search dramatically outperforms blind discovery (-56%)
+
+When asked to enumerate all documents for a specific client or market category, an agent using `find . -name '*-ULS-*' -type f` needs 2-3 turns vs 6-7 turns for blind folder navigation. The reduction is consistent across all four discovery questions:
+
+| Question | tag-fn-blind | tag-fn | tag-pp | tag-fn vs blind |
+|---|---|---|---|---|
+| D1: ULS inventory (10 files) | 7.0 | 3.3 | 10.0 | **-3.7 turns (-53%)** |
+| D2: PN inventory (4 files) | 6.3 | 3.3 | **2.7** | -3.0 turns (-48%) |
+| D3: Trinidad leads (3 files) | 6.3 | 2.0 | 4.0 | **-4.3 turns (-68%)** |
+| D4: Cross-client sweep | 6.7 | 3.0 | 6.0 | **-3.7 turns (-55%)** |
+| **Total** | **26.3** | **11.7** | **22.7** | **-14.6 turns (-56%)** |
+
+**Passport tag grep** (`grep -rl 'tag' .`) works when the tag string is unique (D2: PN uses `pax-nocturna`, avg 2.7 turns — wins that question). It degrades when the string is common: `uls` appears in document content, client names, and multiple passport fields, leading to false positives and extra navigation (D1: 10.0 turns — worst of all three). Filename tags are more reliable because the uppercase code's position in the filename is unambiguous.
+
+**Note on discovery vs navigation questions:** tag-fn/tag-pp ran on 4 dedicated discovery questions (D1-D4). All other variants ran on 8 navigation questions (Q1-Q8). Aggregate comparisons in the report mix the two question sets and are apples-to-oranges — use the 3-way tag comparison in isolation.
+
 ---
 
 ## Recommendations
@@ -181,6 +202,9 @@ Documents that answer "list everything in category X" questions should have summ
 **7. Use optional tags selectively — apply to out-of-context docs only.**  
 Tags help targeted enumeration (Q4: -2 turns, Q8: -1.4 turns) but cost broad navigation (Q1: +4 turns, Q3: +3 turns). Apply to client/market-scoped docs that regularly surface in git log, search results, tickets, or email — where the address hierarchy is not visible. Do not tag internal admin, product, or marketing docs where in-corpus scanning is the primary access pattern. Each tagged file adds parsing cost to every `ls` scan of its folder.
 
+**8. Filename tag search is the best discovery pattern when tags are available.**  
+When an agent needs to enumerate all documents for a specific client or category without knowing where they are, `find . -name '*-TAG-*' -type f` is dramatically faster than blind folder navigation: 11.7 vs 26.3 total turns across 4 discovery questions (-56%). Passport tag grep (`grep -rl 'tag' .`) works for small targeted sets (PN: 2.7 turns) but degrades on common strings (ULS: 10.0 turns avg — `uls` appears in too many passport fields to grep reliably). Filename tags are the superior discovery path.
+
 ---
 
 ## Descriptive Corpus Design
@@ -202,5 +226,5 @@ Build script: `~/Projects/das-nav-test/build-descriptive.py`
 - **Corpus builders:** `~/Projects/das-nav-test/build-descriptive.py`, `~/Projects/das-nav-test/build-das-v2.py`
 - **Embedding:** `~/Projects/das-nav-test/rag-test.py`
 - **Report generator:** `~/Projects/das-nav-test/report.py`
-- **Run data:** `~/Projects/das-nav-test/results/` (35 runs)
+- **Run data:** `~/Projects/das-nav-test/results/` (38 runs)
 - **ChromaDB:** `~/Projects/sage/.claude/rag/chroma_db` — `das_nav_test_nomic`, `das_nav_test_mxbai`
