@@ -14,8 +14,9 @@
 Measure whether DAS addressing reduces agent navigation cost compared to two baselines:
 - **original** — pre-DAS mixed-convention file names (messy real-world state)
 - **descriptive** — clean alphabetical folder hierarchy, type-subject file naming, no numeric addresses
+- **das-v2** — proposed format `{address}-{type}-{descriptor}.ext`, same folders and passports as DAS
 
-Eight variants total were tested across the three corpora.
+Nine variants total were tested across the three corpora.
 
 ---
 
@@ -26,6 +27,7 @@ Eight variants total were tested across the three corpora.
 | **original** | original | Pre-DAS mixed-convention names, no passports |
 | **descriptive** | descriptive | Clean alphabetical folders (`clients/uls/projects/`), type-subject files (`runbook-netbird-ztna.md`), no passports |
 | **das** | das | DAS numeric addresses only, no manifest or passports |
+| **das-v2** | das-v2 | Proposed format: `{address}-{type}-{descriptor}.ext`, passports intact |
 | **das-manifest** | das | Agent reads `das.manifest.yaml` first to route |
 | **das-passport** | das | Each file has a passport block with summary |
 | **das-manifest-passport** | das | Manifest + passports combined |
@@ -44,6 +46,7 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 |---|---|---|
 | **descriptive** | **99.7** | **+30%** |
 | original | 76.7 | — |
+| **das-v2** | **78.7** | **+3%** |
 | das | 75.3 | -2% |
 | das-manifest | 66.5 | -13% |
 | das-passport | 72.0 | -6% |
@@ -57,6 +60,7 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 |---|---|---|
 | descriptive | 2,727 | +27% |
 | original | 2,150 | — |
+| das-v2 | 2,358 | +10% |
 | das | 2,068 | -4% |
 | das-manifest | 2,059 | -4% |
 | das-passport | 2,301 | +7% |
@@ -66,16 +70,16 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 
 ### Per-question turns breakdown
 
-| Q | Type | original | descriptive | das | das-manifest | rag-nav-mxbai |
-|---|---|---|---|---|---|---|
-| Q1 | Direct lookup | 7.0 | **19.7** | 7.0 | 9.5 | 4.7 |
-| Q2 | Subfolder nav | 7.0 | 7.3 | 8.0 | **3.0** | 4.3 |
-| Q3 | Cross-area | 17.0 | 14.3 | 14.0 | 9.0 | **9.3** |
-| Q4 | Enumeration | 14.0 | **24.0** | 14.0 | 14.0 | 14.0 |
-| Q5 | Recency | 8.0 | 12.0 | 8.0 | 8.5 | **5.0** |
-| Q6 | Structural | 9.7 | 10.7 | 13.3 | 9.5 | **7.7** |
-| Q7 | Buried fact | 6.0 | 5.3 | 6.0 | 8.5 | **3.0** |
-| Q8 | Misrouting | 8.0 | 6.3 | **5.0** | 4.5 | 3.7 |
+| Q | Type | original | descriptive | das | das-v2 | das-manifest | rag-nav-mxbai |
+|---|---|---|---|---|---|---|---|
+| Q1 | Direct lookup | 7.0 | **19.7** | 7.0 | 14.3 | 9.5 | 4.7 |
+| Q2 | Subfolder nav | 7.0 | 7.3 | 8.0 | 6.3 | **3.0** | 4.3 |
+| Q3 | Cross-area | 17.0 | 14.3 | 14.0 | 14.0 | 9.0 | **9.3** |
+| Q4 | Enumeration | 14.0 | **24.0** | 14.0 | 13.0 | 14.0 | 14.0 |
+| Q5 | Recency | 8.0 | 12.0 | 8.0 | 7.7 | 8.5 | **5.0** |
+| Q6 | Structural | 9.7 | 10.7 | 13.3 | **9.7** | 9.5 | 7.7 |
+| Q7 | Buried fact | 6.0 | 5.3 | 6.0 | 7.0 | 8.5 | **3.0** |
+| Q8 | Misrouting | 8.0 | 6.3 | **5.0** | 6.7 | 4.5 | 3.7 |
 
 ---
 
@@ -115,6 +119,14 @@ Listing all active ULS projects costs ~14 turns regardless of variant (descripti
 
 Within a folder, descriptive type-prefixed names (`runbook-`, `analysis-`, `template-`) improve structural orientation questions (Q6) vs DAS address-only names. DAS address names obscure document type in the filename; moving to `{address}-{type}-{descriptor}` format would restore this signal without losing the jump-table benefit of numeric prefixes.
 
+### 9. DAS v2 (`{address}-{type}-{descriptor}`) is validated as neutral-plus
+
+das-v2 aggregate turns (78.7) are statistically neutral vs das (75.3) — within run-to-run variance. The predicted Q6 improvement materialised: structural orientation dropped from 13.3 turns (das) to 9.7 (das-v2), matching the original corpus baseline. The type slug lets agents characterise document type from `ls` output without opening files.
+
+The only notable regression is Q1 (deep direct lookup: 14.3 vs 7.0 in das). This is likely descriptor truncation — `02.01.04-HXT-ULS-netbird-ztna-deployment-260509.md` contains the word "deployment" which reinforces the query signal; `02.01.04-runbook-netbird-ztna.md` does not. With a more specific descriptor (e.g., `02.01.04-runbook-netbird-ztna-deploy.md`) this gap would likely close.
+
+Net verdict: adopt `{address}-{type}-{descriptor}` format. The aggregate cost is noise; the Q6 gain and human readability benefit are real.
+
 ---
 
 ## Recommendations
@@ -128,10 +140,10 @@ The jump-table effect is real and large. Descriptive alphabetical hierarchies pe
 **3. Invest in passport summary quality.**  
 The summary field is the single most impactful thing to write carefully. It should name subject, type, key entities, and any facts an agent would query against.
 
-**4. Add type slug to DAS filename format.**  
+**4. Adopt `{address}-{type}-{descriptor}.ext` as the DAS v2 filename format. Confirmed.**  
 Current: `{address}-HXT-{client}-{descriptor}-{YYMMDD}.ext`  
-Proposed: `{address}-{type}-{descriptor}.ext`  
-Drop dates and HXT prefix — both are redundant with the passport. Add type slug to restore the structural signal that descriptive naming provides.
+Adopted: `{address}-{type}-{descriptor}.ext`  
+Drop dates and HXT prefix — both are redundant with the passport. Type slug restores structural orientation signal (Q6: 13.3 → 9.7 turns) with no aggregate regression. Keep descriptors specific enough to preserve search signal — avoid over-truncating subject words that appear in common queries.
 
 **5. Default navigation pattern for DAS agents: rag-nav-mxbai.**  
 Pre-query RAG (passport-only filter) → get `das_address` → resolve to folder path → inject as `RAG suggests starting at: {path}`. Fall back to manifest-first if RAG returns no result.

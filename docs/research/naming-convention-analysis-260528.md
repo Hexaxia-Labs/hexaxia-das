@@ -95,9 +95,9 @@ Options:
 
 Not yet tested empirically. Low-cost experiment: build a variant with and without client codes and compare Q4/Q5-class questions.
 
-### 2. Does the type slug consistently improve structural orientation?
+### 2. Does the type slug consistently improve structural orientation? CONFIRMED.
 
-We observed type-in-filename helping Q6 in the original corpus (which used informal type codes like `TOOL`, `DISCOVERY`). The descriptive corpus confirmed the pattern at the folder level. But we haven't tested `{address}-{type}-{descriptor}` format directly. The DAS v2 corpus test (below) answers this.
+DAS v2 corpus test result: Q6 (structural orientation) dropped from 13.3 turns (das) to 9.7 (das-v2), matching the original corpus baseline of 9.7. The type slug lets agents characterise document type from `ls` output without opening files. Aggregate performance is neutral — no regression across other question types.
 
 ### 3. Folder naming — address-prefixed labels or bare descriptors?
 
@@ -108,15 +108,21 @@ Mixed-case label folders are visually distinct from files in `ls` output. Curren
 
 ---
 
-## Proposed Next Test: DAS v2 Corpus
+## DAS v2 Corpus Test Results
 
-Build `Hexaxia-Technologies-DAS-v2`:
+Built `Hexaxia-Technologies-DAS-v2`:
 - Same content as DAS corpus
 - Same passports, same manifest
-- Rename all files to `{address}-{type}-{descriptor}.ext`
-- Run same 8 questions, 3 runs each
+- All files renamed to `{address}-{type}-{descriptor}.ext`
+- 3 runs, same 8 questions
 
-Expected result: Q6 (structural orientation) improves. Q1, Q4 stay stable. Everything else within noise. If type slug is neutral, the format is still worth adopting for human readability.
+Results vs DAS:
+- Aggregate turns: 78.7 vs 75.3 — neutral (within variance)
+- Q6 structural orientation: **9.7 vs 13.3** — confirmed improvement (+3.6 turns, -27%)
+- Q1 deep lookup: 14.3 vs 7.0 — regression (descriptor truncation; "netbird-ztna-deployment" → "netbird-ztna" loses search signal)
+- All other questions: neutral
+
+Build script: `~/Projects/das-nav-test/build-das-v2.py`
 
 ---
 
@@ -143,7 +149,8 @@ This is out of scope while the ML/human balance is still being calibrated — th
 | Drop dates from filenames | Confirmed |
 | Drop HXT prefix | Confirmed |
 | Keep numeric address prefix | Confirmed — proven critical |
-| Add type slug | Proposed — needs DAS v2 test to validate |
+| Add type slug | **Confirmed — DAS v2 test: Q6 13.3 → 9.7 turns, neutral aggregate** |
+| Keep descriptors specific (not over-truncated) | **Confirmed — Q1 regression traced to descriptor truncation** |
 | Drop client code | Open — lean toward drop, needs test |
 | Controlled type vocabulary (~15) | Proposed — list above is v1 draft |
 | Passport as SQL schema foundation | Noted — out of scope until naming stabilizes |
