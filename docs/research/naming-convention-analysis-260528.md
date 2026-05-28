@@ -25,7 +25,7 @@ The descriptive corpus performed 30% worse than DAS on agent navigation (99.7 vs
 |---|---|---|---|
 | Numeric address prefix | **Critical.** Acts as jump table — agents immediately discard irrelevant areas. +30% regression without it. | Learnable. Not intuitive at first, but consistent once mapped. | Routing key via `das_address` in passport. Filename numeric prefix reinforces the signal. |
 | Type slug in filename | **Helpful.** Agent can characterize doc type from `ls` without reading file. Proven in Q6-class questions. | **Immediately useful.** Scan any folder and know what you're looking at. | Appears in RAG result snippets — reinforces semantic match. |
-| Optional tag (corpus vocabulary) | Mixed. Helps targeted queries (Q4 enumeration: 13.0 → 11.3 turns with tags). Hurts broad navigation (Q1: 14.3 → 18.3, Q3: 14.0 → 16.7) — adds tokens to every `ls` line. **Discovery via `find . -name '*-TAG-*'`: dramatic win — 11.7 vs 26.3 turns (-56%) on D1-D4 discovery questions.** Net: in-corpus navigation cost is real; discovery benefit is large when agent uses find. | **Useful when file travels out of context** — git log, search results, email attachments. Not needed for every file. | Tag codes are short and distinct — unlikely to distort RAG matching. |
+| Optional tag (corpus vocabulary) | Three proven effects: (1) **In-folder enumeration** — small win on Q4/Q8 (+2 turns, -1.4 turns). (2) **Broad `ls` scan cost** — adds a token to every filename the agent parses; hurts Q1/Q3 (−4 turns each). (3) **Corpus-wide discovery via `find . -name '*-TAG-*'`** — dramatic win: 11.7 vs 26.3 turns (-56%) when agent uses `find`. Net: navigation cost is real; discovery benefit is large and asymmetric. | **Out-of-context readability** — git log, search results, email attachments. Useful when file travels out of its folder. | Tag codes are short and distinct — unlikely to distort RAG matching. |
 | Date in filename | Noise. No navigation or routing value. | Noise. Makes files look stale. Accumulates over time. | Noise. Passport `created`/`modified` fields own this. |
 | HXT / org prefix | Noise. Every file in a single-org corpus already belongs to that org. | Noise. | Noise. |
 | Passport summary | N/A (summary lives in the passport block, not the filename). | N/A. | **The actual retrieval signal.** Quality of the `summary` field determines RAG accuracy — not the filename. |
@@ -43,7 +43,7 @@ The descriptive corpus performed 30% worse than DAS on agent navigation (99.7 vs
 | Token | Rules |
 |---|---|
 | `{address}` | DAS dotted numeric address (e.g., `02.01.04`). Required. |
-| `{TAG}` | One optional tag from the corpus vocabulary defined in `das.config.yaml`. Uppercase 2-5 chars. Use when the file is regularly seen out of context and the address alone doesn't provide enough signal. |
+| `{TAG}` | One optional tag from the corpus vocabulary defined in `das.config.yaml`. Uppercase 2-5 chars. Apply when any of the following is true: (1) the file regularly surfaces out of its folder (git log, email, search results); (2) you expect agents to run corpus-wide discovery queries for this entity (e.g., "list all ULS documents"); (3) the address alone is ambiguous when the file is seen in isolation. |
 | `{type}` | Controlled vocabulary slug (see below). Required. |
 | `{descriptor}` | 2-4 word kebab-case subject. Specific enough to match likely search terms — do not over-truncate. No articles, conjunctions, dates, or org codes. |
 
@@ -60,7 +60,15 @@ The descriptive corpus performed 30% worse than DAS on agent navigation (99.7 vs
 
 Tag is applied selectively — client-scoped and market-scoped docs benefit; internal admin and product docs typically don't need it.
 
-**Tag guidance from das-v3 test:** Apply tags to docs that regularly surface in git log, search results, tickets, or email — where the address hierarchy isn't visible. Do not tag broadly: each tagged file adds parsing cost to every `ls` scan of its folder.
+**When to apply a tag — three proven use cases:**
+
+1. **Out-of-context readability.** The file regularly surfaces in git log, tickets, email, or search results where the folder hierarchy is not visible. The tag gives immediate context without opening the file.
+
+2. **Corpus-wide discovery.** An agent may need to enumerate all documents for this entity across the entire corpus (e.g., "list all ULS documents"). Filename tags enable `find . -name '*-ULS-*' -type f` — a single command that returns all tagged files regardless of folder location. Discovery test result: 11.7 vs 26.3 blind turns (-56%) across 4 enumeration questions.
+
+3. **In-folder disambiguation.** Multiple clients or market segments appear in the same folder and the agent needs to filter by client without opening each file. Small benefit (Q4: -2 turns, Q8: -1.4 turns from das-v3 test).
+
+**When not to tag:** Internal admin, products, and marketing docs where the folder already provides unambiguous context and corpus-wide enumeration is not a use case. Each tagged file adds one parsing token to every `ls` scan of its folder — cost is modest per file but accumulates across broad navigation passes (Q1: +4 turns, Q3: +3 turns in das-v3 test).
 
 ---
 
@@ -92,10 +100,10 @@ Hard cap at 15 types — now in spec section 5.4. Anything that doesn't fit forc
 
 ### 1. Client code — resolved via tag vocabulary
 
-The original question was binary: drop the client code or keep it. The spec resolves this more cleanly with an optional tag vocabulary. Client codes are one use of the tag slot — not a special feature. A file that travels out of context (git log, search result, email attachment) gets a tag if the address alone is ambiguous. A file that stays in context doesn't need one.
+The original question was binary: drop the client code or keep it. The spec resolves this more cleanly with an optional tag vocabulary. Client codes are one use of the tag slot — not a special feature. A file earns a tag when any of three conditions is met: (1) it travels out of context, (2) it belongs to a set agents may need to enumerate via corpus-wide discovery, or (3) in-folder disambiguation is needed.
 
-`02.01.04-ULS-runbook-netbird-ztna-deploy.md` — tag justified; this surfaces in git log, tickets, handoff emails.  
-`07.08-spec-hexpublish.md` — no tag needed; product is clear from the `07.08-HexPublish` folder.
+`02.01.04-ULS-runbook-netbird-ztna-deploy.md` — tag justified on all three counts: surfaces in git log; part of a set agents enumerate ("list all ULS docs"); and ULS co-exists with PN in the same 02-Clients folder.  
+`07.08-spec-hexpublish.md` — no tag needed; product is clear from the `07.08-HexPublish` folder; no corpus-wide enumeration use case for HexPublish docs.
 
 The tag vocabulary in `das.config.yaml` defines valid codes for the corpus. Any dimension can be a tag — client, market, product, team — as long as it's in the vocabulary.
 
@@ -108,6 +116,22 @@ DAS v2 corpus test result: Q6 (structural orientation) dropped from 13.3 turns (
 real-v3 test (live corpus, DAS v3 filenames, plain folder names like `Projects` and `Deliverables`) scored **77.7 turns** — statistically identical to the full DAS test corpus with address-prefixed folder names. The address in the filename carries the jump-table signal on its own; the folder does not need to repeat it.
 
 **Practical implication:** DAS adoption cost is filename renames only. Folder restructuring adds no measurable navigation value and is not required. Existing folder hierarchies with plain labels are fully compatible with DAS v3 filenames.
+
+### 4. Tag discovery — filename tags beat passport tags for corpus-wide enumeration
+
+Tested with three variants across 4 discovery questions (D1-D4), 3 passes each:
+
+| Variant | Strategy | Avg turns (4 Qs) | vs blind |
+|---|---|---|---|
+| tag-fn-blind | Blind `ls` navigation | 26.3 | baseline |
+| tag-fn | `find . -name '*-TAG-*' -type f` | 11.7 | **-56%** |
+| tag-pp | `grep -rl 'tag' .` on passport blocks | 22.7 | -14% |
+
+**Filename tag search (tag-fn) is the clear winner.** A single `find` command returns all tagged files immediately, regardless of where they are in the folder hierarchy. The agent doesn't need to navigate, open folders, or read file headers.
+
+**Passport tag grep (tag-pp) is unreliable for common strings.** It works when the tag string is distinctive and unlikely to appear in content (`pax-nocturna`: D2 avg 2.7 turns — wins that question). It breaks when the string appears in names, content, and multiple passport fields: `uls` grep led agents to open false positives and navigate more than blind (D1: 10.0 turns — worst of three). Filename tags are unambiguous because the uppercase code's position in the filename is structural, not content-based.
+
+**Agent tooling implication:** For tag-fn to work, the agent must have `find` available as an allowed tool and a system prompt that explains the tag convention. This is a deliberate configuration choice — not every agent gets it by default.
 
 ---
 
@@ -148,6 +172,22 @@ Build script: `~/Projects/das-nav-test/build-das-v2.py`
 - Q8 misrouting: 8.3 vs 5.3 das-v3 — slight regression without passports to anchor type metadata
 
 **Verdict:** Filename address alone is sufficient for agent navigation. Folder addresses are redundant. DAS adoption requires only file renames — existing folder hierarchy does not need to change.
+
+### Tag Discovery — filename tags vs passport tags
+
+- Corpus: real-v3 (tag-fn, tag-fn-blind) and DAS-v2 with passports (tag-pp)
+- 3 passes × 3 variants × 4 discovery questions (D1-D4)
+- D1: ULS inventory (10 files) | D2: PN inventory (4 files) | D3: Trinidad leads (3 files) | D4: cross-client sweep
+
+| Q | tag-fn-blind | tag-fn | tag-pp | tag-fn winner? |
+|---|---|---|---|---|
+| D1: ULS (10 files) | 7.0 | 3.3 | 10.0 | Yes |
+| D2: PN (4 files) | 6.3 | 3.3 | **2.7** | No — tag-pp wins |
+| D3: Trinidad leads | 6.3 | 2.0 | 4.0 | Yes |
+| D4: Cross-client | 6.7 | 3.0 | 6.0 | Yes |
+| **Total** | **26.3** | **11.7** | **22.7** | |
+
+**Verdict:** Filename tag search wins overall by a large margin. Passport tag grep wins D2 only because `pax-nocturna` is a distinctive string with no false positives. For any tag that appears in document content or short client names (e.g., `uls`), passport grep is unreliable.
 
 ---
 
