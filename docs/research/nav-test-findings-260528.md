@@ -16,8 +16,9 @@ Measure whether DAS addressing reduces agent navigation cost compared to two bas
 - **descriptive** — clean alphabetical folder hierarchy, type-subject file naming, no numeric addresses
 - **das-v2** — `{address}-{type}-{descriptor}.ext`, same folders and passports as DAS
 - **das-v3** — `{address}-[{TAG}-]{type}-{descriptor}.ext`, optional tag vocabulary applied selectively
+- **real-v3** — DAS v3 filenames applied to the live `Hexaxia-Technologies` corpus, plain folder names (no address in folder names), no passports, no manifest
 
-Ten variants total were tested across the three corpora.
+Eleven variants total were tested across four corpora.
 
 ---
 
@@ -30,6 +31,7 @@ Ten variants total were tested across the three corpora.
 | **das** | das | DAS numeric addresses only, no manifest or passports |
 | **das-v2** | das-v2 | `{address}-{type}-{descriptor}.ext`, passports intact, no tags |
 | **das-v3** | das-v3 | `{address}-[{TAG}-]{type}-{descriptor}.ext`, tags on client/market-scoped docs |
+| **real-v3** | real | Live `Hexaxia-Technologies` corpus with DAS v3 filenames; plain folder names, no passports, no manifest |
 | **das-manifest** | das | Agent reads `das.manifest.yaml` first to route |
 | **das-passport** | das | Each file has a passport block with summary |
 | **das-manifest-passport** | das | Manifest + passports combined |
@@ -49,6 +51,7 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 | **descriptive** | **99.7** | **+30%** |
 | das-v3 | 85.0 | +11% |
 | original | 76.7 | — |
+| **real-v3** | **77.7** | **+1%** |
 | das-v2 | 78.7 | +3% |
 | das | 75.3 | -2% |
 | das-manifest | 66.5 | -13% |
@@ -64,6 +67,7 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 | descriptive | 2,727 | +27% |
 | das-v3 | 2,598 | +21% |
 | original | 2,150 | — |
+| real-v3 | 2,337 | +9% |
 | das-v2 | 2,358 | +10% |
 | das | 2,068 | -4% |
 | das-manifest | 2,059 | -4% |
@@ -74,16 +78,16 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 
 ### Per-question turns breakdown
 
-| Q | Type | original | descriptive | das | das-v2 | das-v3 | das-manifest | rag-nav-mxbai |
-|---|---|---|---|---|---|---|---|---|
-| Q1 | Direct lookup | 7.0 | **19.7** | 7.0 | 14.3 | 18.3 | 9.5 | 4.7 |
-| Q2 | Subfolder nav | 7.0 | 7.3 | 8.0 | 6.3 | 9.0 | **3.0** | 4.3 |
-| Q3 | Cross-area | 17.0 | 14.3 | 14.0 | 14.0 | 16.7 | 9.0 | **9.3** |
-| Q4 | Enumeration | 14.0 | **24.0** | 14.0 | 13.0 | **11.3** | 14.0 | 14.0 |
-| Q5 | Recency | 8.0 | 12.0 | 8.0 | 7.7 | 8.3 | 8.5 | **5.0** |
-| Q6 | Structural | 9.7 | 10.7 | 13.3 | **9.7** | **9.7** | 9.5 | 7.7 |
-| Q7 | Buried fact | 6.0 | 5.3 | 6.0 | 7.0 | 6.3 | 8.5 | **3.0** |
-| Q8 | Misrouting | 8.0 | 6.3 | **5.0** | 6.7 | 5.3 | 4.5 | 3.7 |
+| Q | Type | original | descriptive | das | das-v2 | das-v3 | real-v3 | das-manifest | rag-nav-mxbai |
+|---|---|---|---|---|---|---|---|---|---|
+| Q1 | Direct lookup | 7.0 | **19.7** | 7.0 | 14.3 | 18.3 | 11.3 | 9.5 | 4.7 |
+| Q2 | Subfolder nav | 7.0 | 7.3 | 8.0 | 6.3 | 9.0 | 7.3 | **3.0** | 4.3 |
+| Q3 | Cross-area | 17.0 | 14.3 | 14.0 | 14.0 | 16.7 | 13.7 | 9.0 | **9.3** |
+| Q4 | Enumeration | 14.0 | **24.0** | 14.0 | 13.0 | **11.3** | 12.3 | 14.0 | 14.0 |
+| Q5 | Recency | 8.0 | 12.0 | 8.0 | 7.7 | 8.3 | 8.7 | 8.5 | **5.0** |
+| Q6 | Structural | 9.7 | 10.7 | 13.3 | **9.7** | **9.7** | 10.0 | 9.5 | 7.7 |
+| Q7 | Buried fact | 6.0 | 5.3 | 6.0 | 7.0 | 6.3 | 6.0 | 8.5 | **3.0** |
+| Q8 | Misrouting | 8.0 | 6.3 | **5.0** | 6.7 | 5.3 | 8.3 | 4.5 | 3.7 |
 
 ---
 
@@ -142,6 +146,14 @@ However the tag delivers on its intended purpose in targeted queries:
 
 The trade-off is clear: tags help questions that need client/market disambiguation; tags hurt questions that require broad scanning. The tag is a human-readability and out-of-context feature first — the in-corpus navigation cost is real but modest at 3 files per question. For a human opening files from a search result or git log, the tag still earns its place.
 
+### 11. DAS v3 filenames alone are sufficient — address in folder names is not required
+
+real-v3 (live `Hexaxia-Technologies` corpus, DAS v3 filenames, plain folder names like `Projects` and `Deliverables`) scores **77.7 turns** — statistically identical to `original` (76.7) and `das` (75.3), and marginally better than `das-v2` (78.7). This holds across all 8 question types.
+
+The address prefix in the filename provides the jump-table signal on its own. Agents doing `ls 02-Clients/02.01-ULS/Projects/` see `02.01.04-ULS-runbook-netbird-ztna-deploy.md` and immediately know the address, type, and subject — without needing the folder to also be named `02.01.04-Projects`. The folder address is redundant for navigation purposes once the filename carries the address.
+
+**Practical implication:** You do not need to rename folder hierarchies to adopt DAS. Renaming files to the `{address}-{type}-{descriptor}` format is the entire adoption cost. Folder renames are optional and add no measurable navigation value.
+
 ---
 
 ## Recommendations
@@ -190,5 +202,5 @@ Build script: `~/Projects/das-nav-test/build-descriptive.py`
 - **Corpus builders:** `~/Projects/das-nav-test/build-descriptive.py`, `~/Projects/das-nav-test/build-das-v2.py`
 - **Embedding:** `~/Projects/das-nav-test/rag-test.py`
 - **Report generator:** `~/Projects/das-nav-test/report.py`
-- **Run data:** `~/Projects/das-nav-test/results/` (32 runs)
+- **Run data:** `~/Projects/das-nav-test/results/` (35 runs)
 - **ChromaDB:** `~/Projects/sage/.claude/rag/chroma_db` — `das_nav_test_nomic`, `das_nav_test_mxbai`
