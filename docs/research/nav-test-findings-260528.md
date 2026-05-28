@@ -14,9 +14,10 @@
 Measure whether DAS addressing reduces agent navigation cost compared to two baselines:
 - **original** — pre-DAS mixed-convention file names (messy real-world state)
 - **descriptive** — clean alphabetical folder hierarchy, type-subject file naming, no numeric addresses
-- **das-v2** — proposed format `{address}-{type}-{descriptor}.ext`, same folders and passports as DAS
+- **das-v2** — `{address}-{type}-{descriptor}.ext`, same folders and passports as DAS
+- **das-v3** — `{address}-[{TAG}-]{type}-{descriptor}.ext`, optional tag vocabulary applied selectively
 
-Nine variants total were tested across the three corpora.
+Ten variants total were tested across the three corpora.
 
 ---
 
@@ -27,7 +28,8 @@ Nine variants total were tested across the three corpora.
 | **original** | original | Pre-DAS mixed-convention names, no passports |
 | **descriptive** | descriptive | Clean alphabetical folders (`clients/uls/projects/`), type-subject files (`runbook-netbird-ztna.md`), no passports |
 | **das** | das | DAS numeric addresses only, no manifest or passports |
-| **das-v2** | das-v2 | Proposed format: `{address}-{type}-{descriptor}.ext`, passports intact |
+| **das-v2** | das-v2 | `{address}-{type}-{descriptor}.ext`, passports intact, no tags |
+| **das-v3** | das-v3 | `{address}-[{TAG}-]{type}-{descriptor}.ext`, tags on client/market-scoped docs |
 | **das-manifest** | das | Agent reads `das.manifest.yaml` first to route |
 | **das-passport** | das | Each file has a passport block with summary |
 | **das-manifest-passport** | das | Manifest + passports combined |
@@ -45,8 +47,9 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 | Corpus | Total turns (8 Qs) | vs original |
 |---|---|---|
 | **descriptive** | **99.7** | **+30%** |
+| das-v3 | 85.0 | +11% |
 | original | 76.7 | — |
-| **das-v2** | **78.7** | **+3%** |
+| das-v2 | 78.7 | +3% |
 | das | 75.3 | -2% |
 | das-manifest | 66.5 | -13% |
 | das-passport | 72.0 | -6% |
@@ -59,6 +62,7 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 | Corpus | Avg output tokens/Q | vs original |
 |---|---|---|
 | descriptive | 2,727 | +27% |
+| das-v3 | 2,598 | +21% |
 | original | 2,150 | — |
 | das-v2 | 2,358 | +10% |
 | das | 2,068 | -4% |
@@ -70,16 +74,16 @@ RAG queries exclusively passport chunks — each formatted as `[passport] {title
 
 ### Per-question turns breakdown
 
-| Q | Type | original | descriptive | das | das-v2 | das-manifest | rag-nav-mxbai |
-|---|---|---|---|---|---|---|---|
-| Q1 | Direct lookup | 7.0 | **19.7** | 7.0 | 14.3 | 9.5 | 4.7 |
-| Q2 | Subfolder nav | 7.0 | 7.3 | 8.0 | 6.3 | **3.0** | 4.3 |
-| Q3 | Cross-area | 17.0 | 14.3 | 14.0 | 14.0 | 9.0 | **9.3** |
-| Q4 | Enumeration | 14.0 | **24.0** | 14.0 | 13.0 | 14.0 | 14.0 |
-| Q5 | Recency | 8.0 | 12.0 | 8.0 | 7.7 | 8.5 | **5.0** |
-| Q6 | Structural | 9.7 | 10.7 | 13.3 | **9.7** | 9.5 | 7.7 |
-| Q7 | Buried fact | 6.0 | 5.3 | 6.0 | 7.0 | 8.5 | **3.0** |
-| Q8 | Misrouting | 8.0 | 6.3 | **5.0** | 6.7 | 4.5 | 3.7 |
+| Q | Type | original | descriptive | das | das-v2 | das-v3 | das-manifest | rag-nav-mxbai |
+|---|---|---|---|---|---|---|---|---|
+| Q1 | Direct lookup | 7.0 | **19.7** | 7.0 | 14.3 | 18.3 | 9.5 | 4.7 |
+| Q2 | Subfolder nav | 7.0 | 7.3 | 8.0 | 6.3 | 9.0 | **3.0** | 4.3 |
+| Q3 | Cross-area | 17.0 | 14.3 | 14.0 | 14.0 | 16.7 | 9.0 | **9.3** |
+| Q4 | Enumeration | 14.0 | **24.0** | 14.0 | 13.0 | **11.3** | 14.0 | 14.0 |
+| Q5 | Recency | 8.0 | 12.0 | 8.0 | 7.7 | 8.3 | 8.5 | **5.0** |
+| Q6 | Structural | 9.7 | 10.7 | 13.3 | **9.7** | **9.7** | 9.5 | 7.7 |
+| Q7 | Buried fact | 6.0 | 5.3 | 6.0 | 7.0 | 6.3 | 8.5 | **3.0** |
+| Q8 | Misrouting | 8.0 | 6.3 | **5.0** | 6.7 | 5.3 | 4.5 | 3.7 |
 
 ---
 
@@ -126,6 +130,17 @@ das-v2 aggregate turns (78.7) are statistically neutral vs das (75.3) — within
 The only notable regression is Q1 (deep direct lookup: 14.3 vs 7.0 in das). This is likely descriptor truncation — `02.01.04-HXT-ULS-netbird-ztna-deployment-260509.md` contains the word "deployment" which reinforces the query signal; `02.01.04-runbook-netbird-ztna.md` does not. With a more specific descriptor (e.g., `02.01.04-runbook-netbird-ztna-deploy.md`) this gap would likely close.
 
 Net verdict: adopt `{address}-{type}-{descriptor}` format. The aggregate cost is noise; the Q6 gain and human readability benefit are real.
+
+### 10. Tags add targeted value but carry in-corpus navigation cost
+
+das-v3 aggregate (85.0 turns) is worse than das-v2 (78.7) and das (75.3). The tag adds tokens to every `ls` line — agents parsing `02.01.04-ULS-runbook-netbird-ztna-deploy.md` must process one more component before deciding relevance. This is visible in Q1 (18.3 vs 14.3 das-v2) and Q3 (16.7 vs 14.0), both broad navigation tasks where the agent scans many filenames.
+
+However the tag delivers on its intended purpose in targeted queries:
+- **Q4 enumeration** (list all active ULS projects): 11.3 vs 13.0 das-v2 — the `ULS` tag on project files lets the agent confirm client scope from `ls` without opening each file
+- **Q6 structural orientation**: holds the das-v2 gain (9.7), no regression
+- **Q8 misrouting trap**: 5.3 vs 6.7 das-v2 — tag helps agent skip irrelevant product folders
+
+The trade-off is clear: tags help questions that need client/market disambiguation; tags hurt questions that require broad scanning. The tag is a human-readability and out-of-context feature first — the in-corpus navigation cost is real but modest at 3 files per question. For a human opening files from a search result or git log, the tag still earns its place.
 
 ---
 
