@@ -64,7 +64,7 @@ date_format: YYMMDD
 ```
 
 The `version` here is the schema (file format) version `"1.0"`, distinct from the tool version
-(`0.2.0`) and the design spec version (`v0.3`). The `org` / `context_type` / `date_format` fields
+(`0.3.0`) and the design spec version (`v0.3`). The `org` / `context_type` / `date_format` fields
 are what the current `das` CLI writes. The design spec (v0.3) has since replaced the date/context
 filename scheme with an optional `tags` vocabulary and a required `type` slug (used in Step 5
 below); the CLI does not yet emit a `tags` block, so apply tags by hand for now.

@@ -9,6 +9,8 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-29
+
 ### Added
 - `das --version` flag: prints the installed package version (`das.__version__`) and exits.
 - `tags` config field (spec v0.3 section 4): optional controlled vocabulary mapping a 2-5
