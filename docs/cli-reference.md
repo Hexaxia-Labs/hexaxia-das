@@ -195,7 +195,7 @@ das new 02.01.04 runbook netbird-ztna --tag ULS
 das new 00 report audit --ext pdf
 
 # Create in a specific corpus
-das new 04 brief q2-social --path /mnt/d/docs/corpus
+das new 04 post q2-social --path /mnt/d/docs/corpus
 ```
 
 ---
