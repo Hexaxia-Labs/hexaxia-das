@@ -255,3 +255,45 @@ def test_validate_strict_flags_bad_type(tmp_path):
     strict = runner.invoke(app, ["validate", "--strict", "--path", str(tmp_path)])
     assert strict.exit_code == 1
     assert "type slug" in strict.output
+
+
+def test_new_creates_md_file(tmp_path):
+    runner.invoke(app, ["init", "c", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00", "Admin", "gov", "--path", str(tmp_path)])
+    (tmp_path / "00-Admin").mkdir()
+    result = runner.invoke(
+        app, ["new", "00", "reference", "company-profile", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 0
+    created = tmp_path / "00-Admin" / "00-reference-company-profile.md"
+    assert created.exists()
+    assert "00-Admin/00-reference-company-profile.md" in result.output
+
+
+def test_new_invalid_type_exits_1(tmp_path):
+    runner.invoke(app, ["init", "c", "--path", str(tmp_path)])
+    (tmp_path / "00-Admin").mkdir()
+    result = runner.invoke(
+        app, ["new", "00", "frobnicate", "foo", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 1
+    assert "Invalid type" in result.output
+
+
+def test_new_unresolved_address_exits_1(tmp_path):
+    runner.invoke(app, ["init", "c", "--path", str(tmp_path)])
+    result = runner.invoke(
+        app, ["new", "07", "spec", "foo", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 1
+    assert "no folder found" in result.output
+
+
+def test_new_non_md_exits_0(tmp_path):
+    runner.invoke(app, ["init", "c", "--path", str(tmp_path)])
+    (tmp_path / "00-Admin").mkdir()
+    result = runner.invoke(
+        app, ["new", "00", "report", "audit", "--ext", "pdf", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 0
+    assert (tmp_path / "00-Admin" / "00-report-audit.pdf").exists()

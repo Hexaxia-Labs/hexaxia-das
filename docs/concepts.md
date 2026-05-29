@@ -60,6 +60,9 @@ Examples:
 02.01.03-ULS-contract-msa-amendment.md
 ```
 
+`das new <address> <type> <descriptor>` scaffolds a conformant file at an address, writing a
+passport stub (with an empty `summary` to fill in) into `.md` files.
+
 ---
 
 ## The Corpus

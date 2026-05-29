@@ -14,6 +14,7 @@ from das.manifest import (
     MANIFEST_FILENAME,
 )
 from das.validator import validate_corpus
+from das.creator import create_document
 from das import __version__
 
 app = typer.Typer(help="Hexaxia DAS: Document Addressing Standard corpus tool")
@@ -128,6 +129,41 @@ def add(
         raise typer.Exit(1)
     write_manifest(manifest_path, manifest)
     typer.echo(f"Added [{address}] {label}")
+
+
+@app.command()
+def new(
+    address: str = typer.Argument(..., help="DAS address (e.g. 02.01.04)"),
+    type: str = typer.Argument(..., help="Type slug (see spec 5.4)"),
+    descriptor: str = typer.Argument(..., help="Lowercase-hyphenated descriptor"),
+    tag: Optional[str] = typer.Option(
+        None, help="Tag code (must be in the config tags vocabulary)"
+    ),
+    ext: str = typer.Option("md", help="File extension (default md)"),
+    path: Path = typer.Option(Path("."), help="Corpus root directory"),
+):
+    """Create a new spec-conformant document file at an address."""
+    try:
+        created = create_document(path, address, type, descriptor, tag=tag, ext=ext)
+    except FileNotFoundError:
+        typer.echo(
+            f"Error: no DAS corpus found at {path}. Run 'das init' first.", err=True
+        )
+        raise typer.Exit(1)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1)
+    rel = created.relative_to(path)
+    if created.suffix == ".md":
+        typer.echo(
+            f"Created {rel}. Write the passport summary - it is the entire RAG signal."
+        )
+    else:
+        typer.echo(
+            f"Created {rel}. Note: {created.suffix.lstrip('.')} files cannot embed a "
+            "passport block - record its passport separately.",
+            err=True,
+        )
 
 
 @app.command()

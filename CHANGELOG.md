@@ -9,6 +9,10 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- `das new` creates a validated, spec-v0.3-conformant document file at an address and
+  scaffolds a passport stub in `.md` files.
+
 ## [0.3.0] - 2026-05-29
 
 ### Added
