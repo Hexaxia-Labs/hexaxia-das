@@ -18,6 +18,8 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the manifest.
 - `das validate` now flags root-level address-bearing files whose address is not in the
   manifest (previously passed silently).
+- `das validate` now reports 'invalid address format' for malformed numeric prefixes (e.g.
+  `123-Weird`) instead of 'No address prefix found'.
 
 ---
 

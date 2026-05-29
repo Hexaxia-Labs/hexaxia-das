@@ -6,7 +6,7 @@ from typing import List, Optional
 from das.config import load_config, CONFIG_FILENAME
 from das.manifest import (
     load_manifest, MANIFEST_FILENAME,
-    ADDRESS_RE, FILE_ADDRESS_RE, FOLDER_NAME_RE,
+    ADDRESS_RE, FILE_ADDRESS_RE, FOLDER_NAME_RE, LOOSE_PREFIX_RE,
 )
 
 SKIP_NAMES = {
@@ -70,7 +70,13 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
         address = _extract_address(item.name)
 
         if address is None:
-            errors.append(ValidationError(str(rel), "No address prefix found"))
+            if LOOSE_PREFIX_RE.match(item.name):
+                errors.append(ValidationError(
+                    str(rel),
+                    "Invalid address format (malformed numeric prefix)",
+                ))
+            else:
+                errors.append(ValidationError(str(rel), "No address prefix found"))
             continue
 
         if not ADDRESS_RE.match(address):

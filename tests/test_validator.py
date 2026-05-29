@@ -142,6 +142,22 @@ def test_root_address_file_registered_is_valid(corpus):
     assert validate_corpus(corpus) == []
 
 
+def test_malformed_prefix_reports_invalid_format(corpus):
+    # A name that HAS a numeric prefix but it is malformed (not two-digit
+    # segments) should report an invalid format, not a missing prefix.
+    (corpus / "123-Weird").mkdir()
+    errors = validate_corpus(corpus)
+    assert any("invalid address format" in e.message.lower() for e in errors)
+    assert not any("No address prefix" in e.message for e in errors)
+
+
+def test_truly_unprefixed_still_reports_no_prefix(corpus):
+    # A name with no leading digit at all still reports a missing prefix.
+    (corpus / "JustText").mkdir()
+    errors = validate_corpus(corpus)
+    assert any("No address prefix" in e.message for e in errors)
+
+
 def test_root_suffix_skip_does_not_apply_in_subfolders(corpus):
     # The root-suffix skip only applies to files whose parent IS the corpus
     # root. A .txt with no address nested in a registered folder is invalid.

@@ -13,6 +13,10 @@ VALID_TYPES = set(LEVEL_TYPES) | {"file"}
 ADDRESS_RE = re.compile(r"^\d{2}(\.\d{2})*$")
 FILE_ADDRESS_RE = re.compile(r"^(\d{2}(\.\d{2})*)-")
 FOLDER_NAME_RE = re.compile(r"^\d{2}(\.\d{2})*-[A-Z][a-zA-Z0-9-]*$")
+# Matches a name that begins with a numeric prefix followed by a hyphen, even
+# when the prefix is malformed (not strict two-digit segments). Used to tell a
+# malformed address prefix apart from a name with no prefix at all.
+LOOSE_PREFIX_RE = re.compile(r"^\d+([.\d]*)-")
 
 
 @dataclass
