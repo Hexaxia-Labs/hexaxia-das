@@ -36,8 +36,6 @@ das init CORPUS [OPTIONS]
 | Option | Default | Description |
 |---|---|---|
 | `--org TEXT` | None | Org code prepended to filenames (e.g. `HXT`). 2-5 uppercase letters. |
-| `--context-type TEXT` | None | Secondary identifier type: `client`, `project`, `dept`, or `none` |
-| `--date-format TEXT` | `YYMMDD` | Date format for filenames. `YYMMDD` is the defined format. Omit or pass empty string to exclude dates. |
 | `--tag CODE=description` | None | Tag vocabulary entry. Repeatable. Code must be 2-5 uppercase letters. Omit entirely for corpora that do not use filename tags - no `tags` block is written. |
 | `--path PATH` | `.` | Directory to initialize the corpus in |
 
@@ -56,20 +54,17 @@ das init CORPUS [OPTIONS]
 **Examples:**
 
 ```bash
-# Minimal corpus (no org code, no context type)
+# Minimal corpus (no org code)
 das init my-corpus
 
-# Full config with org and client context
-das init hexaxia-technologies --org HXT --context-type client
+# Full config with org code
+das init hexaxia-technologies --org HXT
 
 # Define a filename tag vocabulary (repeat --tag per entry)
 das init hexaxia-technologies --tag ULS="United Life Services client" --tag PN="Pax Nocturna client"
 
 # Initialize in a specific directory
 das init my-corpus --path /home/user/Documents/corpus
-
-# Exclude dates from filenames
-das init my-corpus --org HXT --date-format ""
 ```
 
 ---
@@ -247,6 +242,7 @@ das validate [OPTIONS]
 
 | Option | Default | Description |
 |---|---|---|
+| `--strict` | off | Enforces the full v0.3 filename format, including a valid `{type}` slug from the spec 5.4 vocabulary; a missing or unknown type is an error. Default validation does not check the type slug. |
 | `--path PATH` | `.` | Corpus root directory |
 
 **Exit codes:**
@@ -267,6 +263,7 @@ das validate [OPTIONS]
 | File-to-folder match | A file's address must match its parent folder's address |
 | Root file registration | Address-bearing files at the corpus root are cross-checked against the manifest |
 | Filename tag vocabulary | When the config defines a `tags` vocabulary, a filename's tag (the uppercase 2-5 letter token immediately after the address) must be a key in that vocabulary; an unknown tag is an error. Enforcement is skipped entirely when no `tags` vocabulary is defined. |
+| Filename type slug (`--strict` only) | With `--strict`, every addressed file's `{type}` slug (the first post-address token, or the second when a tag is present) must be one of the spec 5.4 type slugs; a missing or unknown type is an error. Folders are exempt. Default validation does not perform this check. |
 
 **Skipped items:**
 
@@ -299,4 +296,7 @@ das validate --path /mnt/d/docs/corpus
 
 # Use in CI - non-zero exit if invalid
 das validate || echo "Corpus has naming violations"
+
+# Strict mode also enforces the {type} slug against the spec 5.4 vocabulary
+das validate --strict
 ```

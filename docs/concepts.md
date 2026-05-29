@@ -101,8 +101,6 @@ version: "1.0"
 corpus: hexaxia-technologies
 initialized: 2026-05-27
 org: HXT
-context_type: client
-date_format: YYMMDD
 address_separator: "."
 manifest: das.manifest.yaml
 ```
@@ -115,20 +113,23 @@ Fields written by `das init` today (these are the fields the `das` v0.2.0 CLI re
 | `corpus` | Yes | Unique slug for this corpus |
 | `initialized` | Yes | Date the corpus was created (YYYY-MM-DD) |
 | `org` | No | Org code prepended to filenames (e.g. `HXT`) |
-| `context_type` | No | What the secondary identifier represents: `client`, `project`, `dept`, or `none` |
-| `date_format` | No | `YYMMDD` is the only supported value. Omit to make dates optional. |
 | `tags` | No | Controlled vocabulary for optional filename tags: a mapping of code (2-5 uppercase letters) to human description. Populate at init with repeatable `das init --tag CODE=description`. Omitted entirely when no tags are defined. |
 | `address_separator` | Yes | Always `.` - reserved for future federation. Do not change. |
 | `manifest` | Yes | Path to the manifest file |
 
 > **Spec vs implementation note.** The design spec ([docs/spec.md](spec.md) section 4.1, v0.3) has
-> moved past the `context_type` / `date_format` filename scheme: it drops dates and the context code
-> from filenames and instead defines an optional `tags` vocabulary in the config plus a required
-> `type` slug in filenames. The `tags` config field is now **implemented** - the `das` CLI reads and
-> writes it, and `das init --tag CODE=description` populates it. `das validate` now enforces this
-> vocabulary: a filename tag that is not in the config `tags` is reported as an error (enforcement is
-> skipped when no vocabulary is defined). Until the rest of the CLI catches up to the v0.3 filename
-> scheme, the fields above are what an initialized corpus actually contains.
+> moved past the legacy `context_type` / `date_format` filename scheme: it drops dates and the context
+> code from filenames and instead defines an optional `tags` vocabulary in the config plus a required
+> `type` slug in filenames. As of spec v0.3 (section 4), `das init` no longer writes the legacy
+> `context_type` / `date_format` fields and the `--context-type` / `--date-format` options are
+> removed. Existing configs that still contain these keys continue to load - they are filtered out and
+> ignored. The `tags` config field is **implemented** - the `das` CLI reads and writes it, and
+> `das init --tag CODE=description` populates it. `das validate` now enforces this vocabulary: a
+> filename tag that is not in the config `tags` is reported as an error (enforcement is skipped when no
+> vocabulary is defined). The required filename `{type}` slug is enforced only under `das validate
+> --strict`: with that flag every addressed file's `{type}` must be one of the spec 5.4 type slugs, and
+> a missing or unknown type is an error (folders are exempt). Default validation does not check the
+> `{type}` slug, so legacy corpora are never newly-failed.
 
 **Changing this file after initialization is a breaking change.** Every filename and manifest
 entry depends on the naming format being stable. If you must change it, rename all affected files,

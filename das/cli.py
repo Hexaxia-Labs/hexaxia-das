@@ -22,10 +22,6 @@ app = typer.Typer(help="Hexaxia DAS: Document Addressing Standard corpus tool")
 def init(
     corpus: str = typer.Argument(..., help="Corpus slug (e.g. hexaxia-technologies)"),
     org: Optional[str] = typer.Option(None, help="Org code (e.g. HXT)"),
-    context_type: Optional[str] = typer.Option(
-        None, help="client | project | dept | none"
-    ),
-    date_format: Optional[str] = typer.Option("YYMMDD", help="Date format"),
     tag: List[str] = typer.Option(
         [],
         "--tag",
@@ -64,8 +60,6 @@ def init(
             address_separator=".",
             manifest=MANIFEST_FILENAME,
             org=org,
-            context_type=context_type,
-            date_format=date_format,
             tags=tags,
         )
     except ValueError as e:
@@ -177,11 +171,16 @@ def find(
 
 @app.command()
 def validate(
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="Enforce the full v0.3 filename format, including the {type} slug",
+    ),
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
     """Validate corpus naming convention compliance."""
     try:
-        errors = validate_corpus(path)
+        errors = validate_corpus(path, strict=strict)
     except FileNotFoundError:
         typer.echo(f"Error: no DAS corpus found at {path}. Run 'das init' first.", err=True)
         raise typer.Exit(1)

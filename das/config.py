@@ -7,7 +7,6 @@ import yaml
 
 CONFIG_FILENAME = "das.config.yaml"
 SPEC_VERSION = "1.0"
-VALID_CONTEXT_TYPES = {"client", "project", "dept", "none"}
 TAG_CODE_RE = re.compile(r"^[A-Z]{2,5}$")
 
 
@@ -19,17 +18,11 @@ class DASConfig:
     address_separator: str
     manifest: str
     org: Optional[str] = None
-    context_type: Optional[str] = None
-    date_format: Optional[str] = None
     tags: Optional[dict[str, str]] = None
 
     def __post_init__(self):
         if self.address_separator != ".":
             raise ValueError("address_separator must be '.'")
-        if self.context_type and self.context_type not in VALID_CONTEXT_TYPES:
-            raise ValueError(
-                f"context_type must be one of {sorted(VALID_CONTEXT_TYPES)}"
-            )
         if self.tags:
             for code, description in self.tags.items():
                 if not TAG_CODE_RE.match(code):

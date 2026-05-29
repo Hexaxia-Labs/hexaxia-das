@@ -133,3 +133,13 @@ def test_search_no_results(corpus):
     manifest = load_manifest(corpus / config.manifest)
     results = search_nodes(manifest, "nonexistent")
     assert results == []
+
+
+def test_valid_type_slugs_are_the_spec_5_4_vocabulary():
+    from das.manifest import VALID_TYPE_SLUGS
+    assert VALID_TYPE_SLUGS == {
+        "runbook", "plan", "spec", "design", "strategy", "playbook",
+        "proposal", "contract", "report", "catalog", "lead", "post",
+        "template", "reference", "procedure",
+    }
+    assert len(VALID_TYPE_SLUGS) == 15

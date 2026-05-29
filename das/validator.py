@@ -7,6 +7,7 @@ from das.config import load_config, CONFIG_FILENAME, TAG_CODE_RE
 from das.manifest import (
     load_manifest, MANIFEST_FILENAME,
     ADDRESS_RE, FILE_ADDRESS_RE, FOLDER_NAME_RE, LOOSE_PREFIX_RE,
+    VALID_TYPE_SLUGS,
 )
 
 SKIP_NAMES = {
@@ -47,7 +48,25 @@ def _extract_tag(name: str, address: str) -> Optional[str]:
     return None
 
 
-def validate_corpus(corpus_root: Path) -> List[ValidationError]:
+def _extract_type(name: str, address: str) -> Optional[str]:
+    # Per spec 5.2: {address}-[{TAG}-]{type}-{descriptor}.ext. The {type} is the
+    # first '-'-delimited token after the address, or the second when a TAG (an
+    # uppercase 2-5 first token) is present. Returns the candidate with any file
+    # extension stripped, or None if there is no candidate.
+    remainder = name[len(address) + 1:]  # drop the address and its trailing '-'
+    tokens = remainder.split("-")
+    if not tokens or not tokens[0]:
+        return None
+    idx = 1 if TAG_CODE_RE.match(tokens[0]) else 0
+    if idx >= len(tokens):
+        return None
+    candidate = tokens[idx]
+    if "." in candidate:  # strip a trailing file extension on the type token
+        candidate = candidate.rsplit(".", 1)[0]
+    return candidate or None
+
+
+def validate_corpus(corpus_root: Path, strict: bool = False) -> List[ValidationError]:
     config = load_config(corpus_root)
     manifest = load_manifest(corpus_root / config.manifest)
     errors: List[ValidationError] = []
@@ -132,6 +151,18 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
                     errors.append(ValidationError(
                         str(rel),
                         f"Unknown tag '{tag}' not in config vocabulary",
+                    ))
+
+            # Strict mode enforces the required {type} slug (spec 5.2 / 5.4).
+            # Off by default so legacy corpora are not newly-failed.
+            if strict:
+                type_slug = _extract_type(item.name, address)
+                if type_slug not in VALID_TYPE_SLUGS:
+                    shown = type_slug if type_slug is not None else ""
+                    errors.append(ValidationError(
+                        str(rel),
+                        f"Invalid or missing type slug '{shown}' "
+                        "(not in the spec 5.4 vocabulary)",
                     ))
 
     return errors

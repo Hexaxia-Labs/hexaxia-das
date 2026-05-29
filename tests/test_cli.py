@@ -18,6 +18,13 @@ def test_init_output_names_files(tmp_path):
     assert "das.manifest.yaml" in result.output
 
 
+def test_init_rejects_removed_context_type_option(tmp_path):
+    result = runner.invoke(
+        app, ["init", "c", "--context-type", "client", "--path", str(tmp_path)]
+    )
+    assert result.exit_code != 0  # Typer exit code 2: no such option
+
+
 def test_init_with_org(tmp_path):
     runner.invoke(app, ["init", "my-corpus", "--org", "HXT", "--path", str(tmp_path)])
     from das.config import load_config
@@ -229,3 +236,15 @@ def test_validate_reports_error_count(tmp_path):
     (tmp_path / "Finance").mkdir()
     result = runner.invoke(app, ["validate", "--path", str(tmp_path)])
     assert "2 validation error" in result.output
+
+
+def test_validate_strict_flags_bad_type(tmp_path):
+    runner.invoke(app, ["init", "c", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "00", "Admin", "gov", "--path", str(tmp_path)])
+    (tmp_path / "00-Admin").mkdir()
+    (tmp_path / "00-Admin" / "00-frobnicate-foo.md").touch()
+    clean = runner.invoke(app, ["validate", "--path", str(tmp_path)])
+    assert clean.exit_code == 0  # default mode ignores type
+    strict = runner.invoke(app, ["validate", "--strict", "--path", str(tmp_path)])
+    assert strict.exit_code == 1
+    assert "type slug" in strict.output

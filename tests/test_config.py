@@ -41,7 +41,35 @@ def test_optional_fields_omitted_from_file(tmp_path):
     import yaml
     raw = yaml.safe_load((tmp_path / "das.config.yaml").read_text())
     assert "org" not in raw
-    assert "context_type" not in raw
+    assert "tags" not in raw
+
+
+def test_dasconfig_has_no_legacy_fields():
+    cfg = DASConfig(
+        version="1.0",
+        corpus="x",
+        initialized="2026-05-29",
+        address_separator=".",
+        manifest="das.manifest.yaml",
+    )
+    assert not hasattr(cfg, "context_type")
+    assert not hasattr(cfg, "date_format")
+
+
+def test_legacy_config_with_dropped_fields_still_loads(tmp_path):
+    import yaml
+    (tmp_path / "das.config.yaml").write_text(yaml.safe_dump({
+        "version": "1.0",
+        "corpus": "x",
+        "initialized": "2026-05-29",
+        "address_separator": ".",
+        "manifest": "das.manifest.yaml",
+        "context_type": "client",
+        "date_format": "YYMMDD",
+    }))
+    cfg = load_config(tmp_path)
+    assert cfg.corpus == "x"
+    assert not hasattr(cfg, "context_type")
 
 
 def test_invalid_address_separator():
@@ -52,18 +80,6 @@ def test_invalid_address_separator():
             initialized="2026-05-27",
             address_separator="/",
             manifest="das.manifest.yaml",
-        )
-
-
-def test_invalid_context_type():
-    with pytest.raises(ValueError, match="context_type"):
-        DASConfig(
-            version="1.0",
-            corpus="test",
-            initialized="2026-05-27",
-            address_separator=".",
-            manifest="das.manifest.yaml",
-            context_type="invalid",
         )
 
 

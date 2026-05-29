@@ -18,6 +18,14 @@ FOLDER_NAME_RE = re.compile(r"^\d{2}(\.\d{2})*-[A-Z][a-zA-Z0-9-]*$")
 # malformed address prefix apart from a name with no prefix at all.
 LOOSE_PREFIX_RE = re.compile(r"^\d+([.\d]*)-")
 
+# Filename {type} slugs - the hard-capped controlled vocabulary from spec 5.4.
+# Distinct from VALID_TYPES above (which are manifest node levels).
+VALID_TYPE_SLUGS = frozenset({
+    "runbook", "plan", "spec", "design", "strategy", "playbook", "proposal",
+    "contract", "report", "catalog", "lead", "post", "template", "reference",
+    "procedure",
+})
+
 
 @dataclass
 class ManifestNode:

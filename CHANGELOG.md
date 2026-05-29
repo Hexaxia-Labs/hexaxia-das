@@ -19,6 +19,8 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   after the address) must be a key in that vocabulary; an unknown tag is a `ValidationError`.
   Enforcement is skipped entirely when no `tags` vocabulary is defined, so existing untagged
   corpora are unaffected. Folder names are not tag-checked.
+- `das validate --strict` enforces the filename `{type}` slug against the spec 5.4 vocabulary
+  (folders exempt). Default validation is unchanged.
 - Project-local Claude Code agents (`das-engineer`, `das-operator`) and an 8-skill library
   under `.claude/`, wired to synapaxia for agent memory.
 
@@ -32,6 +34,11 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   fields as actually emitted by the CLI and flagged the spec'd-but-unimplemented `tags` field.
   Corrected `CONTRIBUTING.md` to drop the non-existent `das --version` flag, and fixed stale
   research cross-references (spec `v0.2` -> `v0.3`; corpus file count `55` -> `56`).
+
+### Removed
+- `das init` no longer writes the legacy `context_type` / `date_format` config fields, and the
+  `--context-type` / `--date-format` options are removed (spec v0.3 section 4). Existing configs
+  containing these keys still load - they are ignored.
 
 ### Fixed
 - `das add` now rejects malformed addresses (e.g. `abc`, `5`) instead of writing them to

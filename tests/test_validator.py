@@ -248,3 +248,51 @@ def test_folder_with_uppercase_label_is_not_tag_checked(corpus):
     (corpus / "00-ABC").mkdir()
     errors = validate_corpus(corpus)
     assert not any("Unknown tag" in e.message for e in errors)
+
+
+def test_default_mode_does_not_enforce_type(corpus):
+    _register(corpus, "00", "Admin", "gov")
+    (corpus / "00-Admin").mkdir()
+    (corpus / "00-Admin" / "00-frobnicate-foo.md").touch()
+    errors = validate_corpus(corpus)  # default strict=False
+    assert not any("type slug" in e.message for e in errors)
+
+
+def test_strict_valid_type_slug_passes(corpus):
+    _register(corpus, "00", "Admin", "gov")
+    (corpus / "00-Admin").mkdir()
+    (corpus / "00-Admin" / "00-reference-company-profile.md").touch()
+    errors = validate_corpus(corpus, strict=True)
+    assert not any("type slug" in e.message for e in errors)
+
+
+def test_strict_invalid_type_slug_errors(corpus):
+    _register(corpus, "00", "Admin", "gov")
+    (corpus / "00-Admin").mkdir()
+    (corpus / "00-Admin" / "00-frobnicate-foo.md").touch()
+    errors = validate_corpus(corpus, strict=True)
+    assert any("type slug 'frobnicate'" in e.message for e in errors)
+
+
+def test_strict_missing_type_errors(corpus):
+    _register(corpus, "00", "Admin", "gov")
+    (corpus / "00-Admin").mkdir()
+    (corpus / "00-Admin" / "00-orphan.md").touch()  # 'orphan' is not a type
+    errors = validate_corpus(corpus, strict=True)
+    assert any("type slug" in e.message for e in errors)
+
+
+def test_strict_tag_then_type_passes(corpus):
+    _set_tags(corpus, {"ULS": "United Life Services"})
+    _register(corpus, "00", "Admin", "gov")
+    (corpus / "00-Admin").mkdir()
+    (corpus / "00-Admin" / "00-ULS-runbook-foo.md").touch()
+    errors = validate_corpus(corpus, strict=True)
+    assert not any("type slug" in e.message for e in errors)
+
+
+def test_strict_folder_is_not_type_checked(corpus):
+    _register(corpus, "00", "Admin", "gov")
+    (corpus / "00-Admin").mkdir()  # a folder, no type slug
+    errors = validate_corpus(corpus, strict=True)
+    assert not any("type slug" in e.message for e in errors)
