@@ -27,7 +27,7 @@ Verify the install:
 .venv/bin/pytest
 ```
 
-All 51 tests should pass.
+The full test suite should pass (111 tests).
 
 ---
 
@@ -56,14 +56,16 @@ Run a single test file:
 ```
 hexaxia-das/
   das/
-    cli.py        - typer commands (init, add, ls, find, validate)
+    cli.py        - typer commands (init, add, new, ls, find, validate)
     config.py     - DASConfig dataclass, load_config, write_config
     manifest.py   - DASManifest, ManifestNode, manifest operations
+    creator.py    - create_document, passport stub generation (das new)
     validator.py  - validate_corpus, ValidationError
   tests/
     conftest.py   - corpus fixture (tmp_path with initialized corpus)
     test_config.py
     test_manifest.py
+    test_creator.py
     test_validator.py
     test_cli.py
   docs/

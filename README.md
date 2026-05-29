@@ -20,6 +20,7 @@ two-level limit becomes a ceiling.
 - **Immutable corpus schema** - `das.config.yaml` locks the naming convention at init time
 - **Agent-ready** - `agent_hint` fields on manifest nodes prime AI routing at schema-build time
 - **Validator** - `das validate` checks your filesystem against the convention (CI-friendly)
+- **Scaffolding** - `das new` creates spec-conformant files (with a passport stub for `.md`)
 
 ---
 
@@ -30,6 +31,9 @@ python3 -m venv .venv
 .venv/bin/pip install -e .
 # or once published to PyPI:
 # .venv/bin/pip install hexaxia-das
+
+# confirm the install:
+.venv/bin/das --version
 ```
 
 ---
@@ -37,8 +41,8 @@ python3 -m venv .venv
 ## Quick Start
 
 ```bash
-# Initialize a corpus
-das init hexaxia-technologies --org HXT --context-type client
+# Initialize a corpus (--tag entries are optional, repeatable)
+das init hexaxia-technologies --org HXT --tag ULS="United Life Services client"
 
 # Add nodes (parent-first)
 das add 00 Admin "Company governance - legal, compliance, registrations"
@@ -60,9 +64,13 @@ For a full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 |---|---|
 | `das init CORPUS` | Initialize a new corpus |
 | `das add ADDRESS LABEL DESC` | Add a node to the manifest |
+| `das new ADDRESS TYPE DESCRIPTOR` | Create a spec-conformant document file (passport stub for `.md`) |
 | `das ls [ADDRESS]` | List manifest nodes |
 | `das find QUERY` | Search manifest by label or description |
 | `das validate` | Validate corpus naming convention compliance |
+
+Add `--strict` to `das validate` to enforce the full v0.3 filename format, including the
+required `{type}` slug. Run `das --version` to print the installed package version.
 
 See [docs/cli-reference.md](docs/cli-reference.md) for the complete reference.
 
