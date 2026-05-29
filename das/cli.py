@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 import typer
 
 from das.config import (
@@ -26,6 +26,11 @@ def init(
         None, help="client | project | dept | none"
     ),
     date_format: Optional[str] = typer.Option("YYMMDD", help="Date format"),
+    tag: List[str] = typer.Option(
+        [],
+        "--tag",
+        help="Tag vocabulary entry as CODE=description (repeatable)",
+    ),
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
     """Initialize a new DAS corpus."""
@@ -38,16 +43,34 @@ def init(
         )
         raise typer.Exit(1)
 
-    config = DASConfig(
-        version=SPEC_VERSION,
-        corpus=corpus,
-        initialized=str(date.today()),
-        address_separator=".",
-        manifest=MANIFEST_FILENAME,
-        org=org,
-        context_type=context_type,
-        date_format=date_format,
-    )
+    tags: Optional[dict[str, str]] = None
+    if tag:
+        tags = {}
+        for entry in tag:
+            if "=" not in entry:
+                typer.echo(
+                    f"Error: invalid --tag '{entry}'. Expected CODE=description.",
+                    err=True,
+                )
+                raise typer.Exit(1)
+            code, description = entry.split("=", 1)
+            tags[code.strip()] = description.strip()
+
+    try:
+        config = DASConfig(
+            version=SPEC_VERSION,
+            corpus=corpus,
+            initialized=str(date.today()),
+            address_separator=".",
+            manifest=MANIFEST_FILENAME,
+            org=org,
+            context_type=context_type,
+            date_format=date_format,
+            tags=tags,
+        )
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1)
     manifest = DASManifest(
         version=SPEC_VERSION,
         corpus=corpus,

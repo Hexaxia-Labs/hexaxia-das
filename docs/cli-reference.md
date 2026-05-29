@@ -38,6 +38,7 @@ das init CORPUS [OPTIONS]
 | `--org TEXT` | None | Org code prepended to filenames (e.g. `HXT`). 2-5 uppercase letters. |
 | `--context-type TEXT` | None | Secondary identifier type: `client`, `project`, `dept`, or `none` |
 | `--date-format TEXT` | `YYMMDD` | Date format for filenames. `YYMMDD` is the defined format. Omit or pass empty string to exclude dates. |
+| `--tag CODE=description` | None | Tag vocabulary entry. Repeatable. Code must be 2-5 uppercase letters. Omit entirely for corpora that do not use filename tags - no `tags` block is written. |
 | `--path PATH` | `.` | Directory to initialize the corpus in |
 
 **Exit codes:**
@@ -45,7 +46,7 @@ das init CORPUS [OPTIONS]
 | Code | Condition |
 |---|---|
 | 0 | Corpus initialized successfully |
-| 1 | `das.config.yaml` already exists (corpus already initialized) |
+| 1 | `das.config.yaml` already exists, malformed `--tag` (no `=`), or invalid tag code/description |
 
 **What it creates:**
 
@@ -60,6 +61,9 @@ das init my-corpus
 
 # Full config with org and client context
 das init hexaxia-technologies --org HXT --context-type client
+
+# Define a filename tag vocabulary (repeat --tag per entry)
+das init hexaxia-technologies --tag ULS="United Life Services client" --tag PN="Pax Nocturna client"
 
 # Initialize in a specific directory
 das init my-corpus --path /home/user/Documents/corpus
