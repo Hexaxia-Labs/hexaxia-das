@@ -141,6 +141,65 @@ das add 04 Marketing "Brand, campaigns, content" --path /mnt/d/docs/corpus
 
 ---
 
+## das new
+
+Create a new spec-v0.3-conformant document file at an address.
+
+**Usage:**
+
+```
+das new ADDRESS TYPE DESCRIPTOR [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `ADDRESS` | Yes | DAS address (e.g. `00`, `02.01.04`). Must resolve to exactly one folder on disk. |
+| `TYPE` | Yes | Type slug from the spec 5.4 vocabulary (e.g. `reference`, `runbook`, `contract`) |
+| `DESCRIPTOR` | Yes | Lowercase-hyphenated descriptor (e.g. `netbird-ztna`, `company-profile`) |
+
+**Options:**
+
+| Option | Default | Description |
+|---|---|---|
+| `--tag CODE` | None | Tag code, inserted into the filename after the address. Must be a key in the config `tags` vocabulary. |
+| `--ext TEXT` | `md` | File extension. Only `.md` files receive a passport stub; other extensions are created bare with a stderr note. |
+| `--path PATH` | `.` | Corpus root directory |
+
+**What it does:**
+
+- Validates the address format, the type slug, the descriptor, and (when given) the tag against the config vocabulary.
+- Resolves the address to its folder by scanning for `{address}-*` directories whose address segment equals the given address.
+- Builds the filename `{address}-[{TAG}-]{type}-{descriptor}.{ext}` and writes it into that folder.
+- For `.md` files, scaffolds a passport stub (an HTML-comment block with `title`, `type`, `status: draft`, optional `tags`, `das_address`, `created`, and an empty `summary`) followed by a `# Title` heading. The empty `summary` is the entire RAG signal and must be filled in.
+- Does not touch the manifest and does not create folders.
+
+**Exit codes:**
+
+| Code | Condition |
+|---|---|
+| 0 | File created (including non-`.md` files, which also print a stderr note) |
+| 1 | Corpus not initialized; invalid address, type, descriptor, or tag; no folder or multiple folders found for the address; or a file with that name already exists |
+
+**Examples:**
+
+```bash
+# Create a reference markdown file with a passport stub
+das new 00 reference company-profile
+
+# Create a tagged runbook (tag must be in the config vocabulary)
+das new 02.01.04 runbook netbird-ztna --tag ULS
+
+# Create a non-markdown file (bare, no passport stub)
+das new 00 report audit --ext pdf
+
+# Create in a specific corpus
+das new 04 brief q2-social --path /mnt/d/docs/corpus
+```
+
+---
+
 ## das ls
 
 List nodes in the corpus manifest.

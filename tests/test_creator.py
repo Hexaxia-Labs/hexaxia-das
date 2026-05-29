@@ -131,3 +131,19 @@ def test_create_document_non_md_has_no_passport(corpus):
 def test_create_document_invalid_address(corpus):
     with pytest.raises(ValueError, match="[Aa]ddress"):
         create_document(corpus, "abc", "reference", "foo")
+
+
+def test_created_file_passes_strict_validation(corpus):
+    from das.validator import validate_corpus
+    from das.manifest import load_manifest, add_node, write_manifest, ManifestNode
+
+    # register the folder address in the manifest and create it on disk
+    mpath = corpus / load_config(corpus).manifest
+    m = load_manifest(mpath)
+    add_node(m, "00", ManifestNode(label="Admin", description="gov", type="area"))
+    write_manifest(mpath, m)
+    (corpus / "00-Admin").mkdir()
+
+    create_document(corpus, "00", "reference", "company-profile")
+    errors = validate_corpus(corpus, strict=True)
+    assert errors == []
