@@ -15,6 +15,20 @@ das <command> --help
 
 ---
 
+## das --version
+
+Print the installed `das` package version and exit.
+
+**Usage:**
+
+```
+das --version
+```
+
+Reports the package version (from `das.__version__`). Does not require an initialized corpus.
+
+---
+
 ## das init
 
 Initialize a new DAS corpus in the specified directory.

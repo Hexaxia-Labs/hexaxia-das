@@ -227,4 +227,4 @@ between them.
 
 ---
 
-*Hexaxia DAS v0.2.0 | Hexaxia Technologies | 2026-05-27*
+*Hexaxia DAS v0.3.0 | Hexaxia Technologies | 2026-05-27*

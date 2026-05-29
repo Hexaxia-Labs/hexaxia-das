@@ -116,7 +116,7 @@ prefixes do not belong in filenames - see spec §5.2.
 
 ## Status
 
-Hexaxia DAS is at **v0.2.0** - a working POC of the standard and CLI tool. The addressing system,
+Hexaxia DAS is at **v0.3.0** - a working POC of the standard and CLI tool. The addressing system,
 manifest schema, naming convention, and validator are stable. The following are designed but
 deferred to later versions:
 
@@ -125,7 +125,7 @@ deferred to later versions:
 - Federation (multi-corpus addressing)
 
 > Three version axes travel together and are intentionally distinct: the **tool/package version**
-> is `0.2.0` (this POC), the **design spec version** is `v0.3` (see [docs/spec.md](docs/spec.md)),
+> is `0.3.0` (this POC), the **design spec version** is `v0.3` (see [docs/spec.md](docs/spec.md)),
 > and the **schema version** written into `das.config.yaml` / `das.manifest.yaml` is `"1.0"`
 > (the on-disk file format). They version independently.
 

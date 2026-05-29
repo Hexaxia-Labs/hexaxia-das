@@ -105,11 +105,11 @@ address_separator: "."
 manifest: das.manifest.yaml
 ```
 
-Fields written by `das init` today (these are the fields the `das` v0.2.0 CLI reads and writes):
+Fields written by `das init` today (these are the fields the `das` v0.3.0 CLI reads and writes):
 
 | Field | Required | Description |
 |---|---|---|
-| `version` | Yes | Schema version of the config/manifest file format (currently `"1.0"`). This is the on-disk format version, not the tool version (`0.2.0`) or the design spec version (`v0.3`). |
+| `version` | Yes | Schema version of the config/manifest file format (currently `"1.0"`). This is the on-disk format version, not the tool version (`0.3.0`) or the design spec version (`v0.3`). |
 | `corpus` | Yes | Unique slug for this corpus |
 | `initialized` | Yes | Date the corpus was created (YYYY-MM-DD) |
 | `org` | No | Org code prepended to filenames (e.g. `HXT`) |

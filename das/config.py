@@ -6,7 +6,8 @@ import re
 import yaml
 
 CONFIG_FILENAME = "das.config.yaml"
-SPEC_VERSION = "1.0"
+# On-disk schema version for das.config.yaml and das.manifest.yaml.
+SCHEMA_VERSION = "1.0"
 TAG_CODE_RE = re.compile(r"^[A-Z]{2,5}$")
 
 

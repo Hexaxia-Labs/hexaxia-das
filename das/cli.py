@@ -6,7 +6,7 @@ import typer
 
 from das.config import (
     DASConfig, load_config, write_config,
-    SPEC_VERSION, CONFIG_FILENAME,
+    SCHEMA_VERSION, CONFIG_FILENAME,
 )
 from das.manifest import (
     DASManifest, ManifestNode, load_manifest, add_node,
@@ -14,8 +14,25 @@ from das.manifest import (
     MANIFEST_FILENAME,
 )
 from das.validator import validate_corpus
+from das import __version__
 
 app = typer.Typer(help="Hexaxia DAS: Document Addressing Standard corpus tool")
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        False, "--version", callback=_version_callback, is_eager=True,
+        help="Show the das version and exit.",
+    ),
+) -> None:
+    """Hexaxia DAS: Document Addressing Standard corpus tool."""
 
 
 @app.command()
@@ -54,7 +71,7 @@ def init(
 
     try:
         config = DASConfig(
-            version=SPEC_VERSION,
+            version=SCHEMA_VERSION,
             corpus=corpus,
             initialized=str(date.today()),
             address_separator=".",
@@ -66,7 +83,7 @@ def init(
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
     manifest = DASManifest(
-        version=SPEC_VERSION,
+        version=SCHEMA_VERSION,
         corpus=corpus,
         updated=str(date.today()),
     )
