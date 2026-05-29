@@ -126,7 +126,10 @@ Fields written by `das init` today (these are the fields the `das` v0.2.0 CLI re
 > ignored. The `tags` config field is **implemented** - the `das` CLI reads and writes it, and
 > `das init --tag CODE=description` populates it. `das validate` now enforces this vocabulary: a
 > filename tag that is not in the config `tags` is reported as an error (enforcement is skipped when no
-> vocabulary is defined).
+> vocabulary is defined). The required filename `{type}` slug is enforced only under `das validate
+> --strict`: with that flag every addressed file's `{type}` must be one of the spec 5.4 type slugs, and
+> a missing or unknown type is an error (folders are exempt). Default validation does not check the
+> `{type}` slug, so legacy corpora are never newly-failed.
 
 **Changing this file after initialization is a breaking change.** Every filename and manifest
 entry depends on the naming format being stable. If you must change it, rename all affected files,

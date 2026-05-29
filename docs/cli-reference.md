@@ -242,6 +242,7 @@ das validate [OPTIONS]
 
 | Option | Default | Description |
 |---|---|---|
+| `--strict` | off | Enforces the full v0.3 filename format, including a valid `{type}` slug from the spec 5.4 vocabulary; a missing or unknown type is an error. Default validation does not check the type slug. |
 | `--path PATH` | `.` | Corpus root directory |
 
 **Exit codes:**
@@ -262,6 +263,7 @@ das validate [OPTIONS]
 | File-to-folder match | A file's address must match its parent folder's address |
 | Root file registration | Address-bearing files at the corpus root are cross-checked against the manifest |
 | Filename tag vocabulary | When the config defines a `tags` vocabulary, a filename's tag (the uppercase 2-5 letter token immediately after the address) must be a key in that vocabulary; an unknown tag is an error. Enforcement is skipped entirely when no `tags` vocabulary is defined. |
+| Filename type slug (`--strict` only) | With `--strict`, every addressed file's `{type}` slug (the first post-address token, or the second when a tag is present) must be one of the spec 5.4 type slugs; a missing or unknown type is an error. Folders are exempt. Default validation does not perform this check. |
 
 **Skipped items:**
 
@@ -294,4 +296,7 @@ das validate --path /mnt/d/docs/corpus
 
 # Use in CI - non-zero exit if invalid
 das validate || echo "Corpus has naming violations"
+
+# Strict mode also enforces the {type} slug against the spec 5.4 vocabulary
+das validate --strict
 ```

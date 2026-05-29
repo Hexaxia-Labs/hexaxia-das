@@ -171,11 +171,16 @@ def find(
 
 @app.command()
 def validate(
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="Enforce the full v0.3 filename format, including the {type} slug",
+    ),
     path: Path = typer.Option(Path("."), help="Corpus root directory"),
 ):
     """Validate corpus naming convention compliance."""
     try:
-        errors = validate_corpus(path)
+        errors = validate_corpus(path, strict=strict)
     except FileNotFoundError:
         typer.echo(f"Error: no DAS corpus found at {path}. Run 'das init' first.", err=True)
         raise typer.Exit(1)

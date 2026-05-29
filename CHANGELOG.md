@@ -19,6 +19,8 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   after the address) must be a key in that vocabulary; an unknown tag is a `ValidationError`.
   Enforcement is skipped entirely when no `tags` vocabulary is defined, so existing untagged
   corpora are unaffected. Folder names are not tag-checked.
+- `das validate --strict` enforces the filename `{type}` slug against the spec 5.4 vocabulary
+  (folders exempt). Default validation is unchanged.
 - Project-local Claude Code agents (`das-engineer`, `das-operator`) and an 8-skill library
   under `.claude/`, wired to synapaxia for agent memory.
 
