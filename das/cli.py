@@ -6,7 +6,7 @@ import typer
 
 from das.config import (
     DASConfig, load_config, write_config,
-    SPEC_VERSION, CONFIG_FILENAME,
+    SCHEMA_VERSION, CONFIG_FILENAME,
 )
 from das.manifest import (
     DASManifest, ManifestNode, load_manifest, add_node,
@@ -54,7 +54,7 @@ def init(
 
     try:
         config = DASConfig(
-            version=SPEC_VERSION,
+            version=SCHEMA_VERSION,
             corpus=corpus,
             initialized=str(date.today()),
             address_separator=".",
@@ -66,7 +66,7 @@ def init(
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
     manifest = DASManifest(
-        version=SPEC_VERSION,
+        version=SCHEMA_VERSION,
         corpus=corpus,
         updated=str(date.today()),
     )
