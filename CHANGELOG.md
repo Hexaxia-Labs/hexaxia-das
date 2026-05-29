@@ -7,6 +7,14 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased]
+
+### Added
+- Project-local Claude Code agents (`das-engineer`, `das-operator`) and an 8-skill library
+  under `.claude/`, wired to synapaxia for agent memory.
+
+---
+
 ## [0.1.0] - 2026-05-27
 
 Initial release of Hexaxia DAS: Document Addressing Standard.
