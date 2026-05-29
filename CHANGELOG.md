@@ -29,9 +29,9 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Documentation reconciliation to remove drift from the source of truth. Clarified the three
-  independent version axes (tool/package `0.2.0`, design spec `v0.3`, on-disk schema `"1.0"`)
+  independent version axes (tool/package `0.3.0`, design spec `v0.3`, on-disk schema `"1.0"`)
   across `README.md`, `docs/concepts.md`, and `docs/quickstart.md`; bumped the stale `README.md`
-  Status from `v0.1.0` to `v0.2.0`. Updated the file naming convention in `README.md`,
+  Status from `v0.1.0` to `v0.3.0`. Updated the file naming convention in `README.md`,
   `docs/concepts.md`, and `docs/quickstart.md` to the adopted spec v0.3 format
   `{address}-[{TAG}-]{type}-{descriptor}.ext` with corrected examples. Documented `das.config.yaml`
   fields as actually emitted by the CLI and flagged the spec'd-but-unimplemented `tags` field.
