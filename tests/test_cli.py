@@ -25,6 +25,46 @@ def test_init_with_org(tmp_path):
     assert config.org == "HXT"
 
 
+def test_init_with_tags(tmp_path):
+    result = runner.invoke(
+        app,
+        [
+            "init", "my-corpus",
+            "--tag", "ULS=United Life Services",
+            "--tag", "PN=Pax Nocturna",
+            "--path", str(tmp_path),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    from das.config import load_config
+    config = load_config(tmp_path)
+    assert config.tags == {
+        "ULS": "United Life Services",
+        "PN": "Pax Nocturna",
+    }
+
+
+def test_init_without_tags_writes_no_tags_block(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    import yaml
+    raw = yaml.safe_load((tmp_path / "das.config.yaml").read_text())
+    assert "tags" not in raw
+
+
+def test_init_invalid_tag_code_exits_1(tmp_path):
+    result = runner.invoke(
+        app, ["init", "my-corpus", "--tag", "bad=x", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 1
+
+
+def test_init_malformed_tag_exits_1(tmp_path):
+    result = runner.invoke(
+        app, ["init", "my-corpus", "--tag", "NOEQUALS", "--path", str(tmp_path)]
+    )
+    assert result.exit_code == 1
+
+
 def test_init_already_initialized_exits_1(tmp_path):
     runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
     result = runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])

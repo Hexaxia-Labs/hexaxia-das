@@ -10,6 +10,10 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- `tags` config field (spec v0.3 section 4): optional controlled vocabulary mapping a 2-5
+  uppercase code to a human description. Validated in `DASConfig.__post_init__`, round-trips
+  through `load_config`/`write_config`, and is omitted from the file when unset. Populate at
+  init with the repeatable `das init --tag CODE=description` option.
 - Project-local Claude Code agents (`das-engineer`, `das-operator`) and an 8-skill library
   under `.claude/`, wired to synapaxia for agent memory.
 

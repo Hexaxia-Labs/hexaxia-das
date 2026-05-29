@@ -2,11 +2,13 @@ from __future__ import annotations
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Optional
+import re
 import yaml
 
 CONFIG_FILENAME = "das.config.yaml"
 SPEC_VERSION = "1.0"
 VALID_CONTEXT_TYPES = {"client", "project", "dept", "none"}
+TAG_CODE_RE = re.compile(r"^[A-Z]{2,5}$")
 
 
 @dataclass
@@ -19,6 +21,7 @@ class DASConfig:
     org: Optional[str] = None
     context_type: Optional[str] = None
     date_format: Optional[str] = None
+    tags: Optional[dict[str, str]] = None
 
     def __post_init__(self):
         if self.address_separator != ".":
@@ -27,6 +30,16 @@ class DASConfig:
             raise ValueError(
                 f"context_type must be one of {sorted(VALID_CONTEXT_TYPES)}"
             )
+        if self.tags:
+            for code, description in self.tags.items():
+                if not TAG_CODE_RE.match(code):
+                    raise ValueError(
+                        f"tags code '{code}' must be 2-5 uppercase letters"
+                    )
+                if not isinstance(description, str) or not description.strip():
+                    raise ValueError(
+                        f"tags code '{code}' must have a non-empty description"
+                    )
 
 
 def load_config(corpus_root: Path) -> DASConfig:

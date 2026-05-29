@@ -117,15 +117,18 @@ Fields written by `das init` today (these are the fields the `das` v0.2.0 CLI re
 | `org` | No | Org code prepended to filenames (e.g. `HXT`) |
 | `context_type` | No | What the secondary identifier represents: `client`, `project`, `dept`, or `none` |
 | `date_format` | No | `YYMMDD` is the only supported value. Omit to make dates optional. |
+| `tags` | No | Controlled vocabulary for optional filename tags: a mapping of code (2-5 uppercase letters) to human description. Populate at init with repeatable `das init --tag CODE=description`. Omitted entirely when no tags are defined. |
 | `address_separator` | Yes | Always `.` - reserved for future federation. Do not change. |
 | `manifest` | Yes | Path to the manifest file |
 
 > **Spec vs implementation note.** The design spec ([docs/spec.md](spec.md) section 4.1, v0.3) has
 > moved past the `context_type` / `date_format` filename scheme: it drops dates and the context code
 > from filenames and instead defines an optional `tags` vocabulary in the config plus a required
-> `type` slug in filenames. The `tags` config field is **spec'd/planned, not yet implemented** - the
-> current `das` CLI does not read or write it. Until the CLI catches up, the fields above are what an
-> initialized corpus actually contains.
+> `type` slug in filenames. The `tags` config field is now **implemented** - the `das` CLI reads and
+> writes it, and `das init --tag CODE=description` populates it. The CLI does not yet validate
+> filename tags against this vocabulary in `das validate`; that remains a follow-up. Until the rest of
+> the CLI catches up to the v0.3 filename scheme, the fields above are what an initialized corpus
+> actually contains.
 
 **Changing this file after initialization is a breaking change.** Every filename and manifest
 entry depends on the naming format being stable. If you must change it, rename all affected files,
