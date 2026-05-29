@@ -209,7 +209,7 @@ This is out of scope while the ML/human balance is still being calibrated — th
 
 ## Status
 
-All decisions incorporated into `docs/spec.md` v0.2.
+All decisions incorporated into `docs/spec.md` v0.3.
 
 | Decision | Status |
 |---|---|

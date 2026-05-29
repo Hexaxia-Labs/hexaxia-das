@@ -78,14 +78,16 @@ See [docs/cli-reference.md](docs/cli-reference.md) for the complete reference.
 00.01.01-State-Filings/
 ```
 
-**Files:** `{address}-[{ORG}-][{CONTEXT}-]{descriptor}[-{YYMMDD}].ext`
+**Files:** `{address}-[{TAG}-]{type}-{descriptor}.ext`
 
 ```
-00.01.01-HXT-articles-of-incorporation-260115.pdf
-02.01.03-HXT-ULS-msa-amendment-260527.md
+00.01.01-contract-articles-of-incorporation.pdf
+02.01.03-ULS-contract-msa-amendment.md
 ```
 
-ORG and CONTEXT codes come from `das.config.yaml` and are set once at corpus init.
+`type` is a required slug from a controlled vocabulary (see [docs/spec.md](docs/spec.md) §5.4).
+`TAG` is optional and comes from the `tags` vocabulary in `das.config.yaml`. Dates and org
+prefixes do not belong in filenames - see spec §5.2.
 
 ---
 
@@ -114,13 +116,18 @@ ORG and CONTEXT codes come from `das.config.yaml` and are set once at corpus ini
 
 ## Status
 
-Hexaxia DAS is at **v0.1.0** - a working POC of the standard and CLI tool. The addressing system,
+Hexaxia DAS is at **v0.2.0** - a working POC of the standard and CLI tool. The addressing system,
 manifest schema, naming convention, and validator are stable. The following are designed but
 deferred to later versions:
 
 - Agent navigation spec
 - Document Passport integration
 - Federation (multi-corpus addressing)
+
+> Three version axes travel together and are intentionally distinct: the **tool/package version**
+> is `0.2.0` (this POC), the **design spec version** is `v0.3` (see [docs/spec.md](docs/spec.md)),
+> and the **schema version** written into `das.config.yaml` / `das.manifest.yaml` is `"1.0"`
+> (the on-disk file format). They version independently.
 
 ---
 

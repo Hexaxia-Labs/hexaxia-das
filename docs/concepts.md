@@ -46,8 +46,8 @@ In the filesystem, the address and label are **fused into a single node name**. 
 together. An agent strips the address to navigate; a human reads the label to understand.
 
 ```
-{address}-{Label}/                          <- folders
-{address}-[{ORG}-][{CONTEXT}-]{descriptor}[-{YYMMDD}].ext   <- files
+{address}-{Label}/                       <- folders
+{address}-[{TAG}-]{type}-{descriptor}.ext <- files (see spec.md section 5.2)
 ```
 
 Examples:
@@ -56,8 +56,8 @@ Examples:
 00-Admin/
 00.01-Business-Registration/
 00.01.01-State-Filings/
-00.01.01-HXT-articles-of-incorporation-260115.pdf
-02.01.03-HXT-ULS-msa-amendment-260527.md
+00.01.01-contract-articles-of-incorporation.pdf
+02.01.03-ULS-contract-msa-amendment.md
 ```
 
 ---
@@ -107,11 +107,11 @@ address_separator: "."
 manifest: das.manifest.yaml
 ```
 
-Fields:
+Fields written by `das init` today (these are the fields the `das` v0.2.0 CLI reads and writes):
 
 | Field | Required | Description |
 |---|---|---|
-| `version` | Yes | Hexaxia DAS spec version |
+| `version` | Yes | Schema version of the config/manifest file format (currently `"1.0"`). This is the on-disk format version, not the tool version (`0.2.0`) or the design spec version (`v0.3`). |
 | `corpus` | Yes | Unique slug for this corpus |
 | `initialized` | Yes | Date the corpus was created (YYYY-MM-DD) |
 | `org` | No | Org code prepended to filenames (e.g. `HXT`) |
@@ -119,6 +119,13 @@ Fields:
 | `date_format` | No | `YYMMDD` is the only supported value. Omit to make dates optional. |
 | `address_separator` | Yes | Always `.` - reserved for future federation. Do not change. |
 | `manifest` | Yes | Path to the manifest file |
+
+> **Spec vs implementation note.** The design spec ([docs/spec.md](spec.md) section 4.1, v0.3) has
+> moved past the `context_type` / `date_format` filename scheme: it drops dates and the context code
+> from filenames and instead defines an optional `tags` vocabulary in the config plus a required
+> `type` slug in filenames. The `tags` config field is **spec'd/planned, not yet implemented** - the
+> current `das` CLI does not read or write it. Until the CLI catches up, the fields above are what an
+> initialized corpus actually contains.
 
 **Changing this file after initialization is a breaking change.** Every filename and manifest
 entry depends on the naming format being stable. If you must change it, rename all affected files,

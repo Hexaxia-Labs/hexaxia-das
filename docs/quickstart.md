@@ -63,6 +63,12 @@ context_type: client
 date_format: YYMMDD
 ```
 
+The `version` here is the schema (file format) version `"1.0"`, distinct from the tool version
+(`0.2.0`) and the design spec version (`v0.3`). The `org` / `context_type` / `date_format` fields
+are what the current `das` CLI writes. The design spec (v0.3) has since replaced the date/context
+filename scheme with an optional `tags` vocabulary and a required `type` slug (used in Step 5
+below); the CLI does not yet emit a `tags` block, so apply tags by hand for now.
+
 ---
 
 ## Step 2: Build the Address Tree
@@ -165,40 +171,44 @@ mkdir -p 04-Marketing
 
 ## Step 5: Name Your Files
 
-Files follow this pattern:
+Files follow this pattern (see [docs/spec.md](spec.md) section 5.2):
 
 ```
-{address}-[{ORG}-][{CONTEXT}-]{descriptor}[-{YYMMDD}].ext
+{address}-[{TAG}-]{type}-{descriptor}.ext
 ```
 
-For Atlas Technologies with `org: ATL` and `context_type: client`:
+The `type` is a required slug from the controlled vocabulary in spec section 5.4
+(`contract`, `report`, `spec`, `lead`, ...). The `TAG` is optional and comes from the
+`tags` vocabulary in `das.config.yaml`. Dates and org prefixes do not belong in filenames -
+created/modified dates live in the document passport.
 
 ```bash
-# Articles of incorporation (no client context - internal doc)
-touch 00-Admin/00.01-Business-Registration/00.01-ATL-articles-of-incorporation-260115.pdf
+# Articles of incorporation (internal doc - address is unambiguous, no tag)
+touch 00-Admin/00.01-Business-Registration/00.01-contract-articles-of-incorporation.pdf
 
-# MSA for Northstar Logistics
-touch 02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01.01-ATL-NSL-msa-260301.pdf
+# MSA for Northstar Logistics (NSL tag scopes the file to the client)
+touch 02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01.01-NSL-contract-msa.pdf
 
-# SOW for a Northstar project
-touch 02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01.01-ATL-NSL-sow-security-audit-260415.pdf
+# SOW for a Northstar security audit project
+touch 02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01.01-NSL-contract-sow-security-audit.pdf
 
-# A project deliverable (no date needed)
-touch 02-Clients/02.01-Northstar-Logistics/02.01.03-Projects/02.01.03-ATL-NSL-network-diagram.pdf
+# A project deliverable
+touch 02-Clients/02.01-Northstar-Logistics/02.01.03-Projects/02.01.03-NSL-design-network-diagram.pdf
 ```
 
-Naming breakdown for `02.01.01-ATL-NSL-msa-260301.pdf`:
+Naming breakdown for `02.01.01-NSL-contract-msa.pdf`:
 
 | Component | Value | Source |
 |---|---|---|
 | Address | `02.01.01` | The containing folder's address |
-| ORG | `ATL` | `org` field in das.config.yaml |
-| CONTEXT | `NSL` | Short code for the client (Northstar Logistics) |
+| TAG | `NSL` | Optional code from the `tags` vocabulary (Northstar Logistics client) |
+| type | `contract` | Required slug from the spec section 5.4 vocabulary |
 | Descriptor | `msa` | What the document is |
-| Date | `260301` | YYMMDD - March 1, 2026 |
 
-The CONTEXT code is optional even when `context_type` is configured. Omit it for
-internal documents that do not belong to a specific client, project, or department.
+The TAG is optional. Apply one when the file travels out of folder context, belongs to an
+entity an agent may need to enumerate corpus-wide, or needs in-folder disambiguation - see
+spec section 5.3 rule 6. Internal docs where the folder already gives unambiguous context
+do not need a tag.
 
 ---
 
