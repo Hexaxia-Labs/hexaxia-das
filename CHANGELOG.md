@@ -10,6 +10,7 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- `das --version` flag: prints the installed package version (`das.__version__`) and exits.
 - `tags` config field (spec v0.3 section 4): optional controlled vocabulary mapping a 2-5
   uppercase code to a human description. Validated in `DASConfig.__post_init__`, round-trips
   through `load_config`/`write_config`, and is omitted from the file when unset. Populate at

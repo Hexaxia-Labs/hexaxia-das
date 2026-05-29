@@ -14,8 +14,25 @@ from das.manifest import (
     MANIFEST_FILENAME,
 )
 from das.validator import validate_corpus
+from das import __version__
 
 app = typer.Typer(help="Hexaxia DAS: Document Addressing Standard corpus tool")
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        False, "--version", callback=_version_callback, is_eager=True,
+        help="Show the das version and exit.",
+    ),
+) -> None:
+    """Hexaxia DAS: Document Addressing Standard corpus tool."""
 
 
 @app.command()

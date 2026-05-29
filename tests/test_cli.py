@@ -5,6 +5,13 @@ from das.cli import app
 runner = CliRunner()
 
 
+def test_version_flag_outputs_version():
+    from das import __version__
+    result = runner.invoke(app, ["--version"])
+    assert result.exit_code == 0
+    assert __version__ in result.output
+
+
 def test_init_creates_config_and_manifest(tmp_path):
     result = runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
     assert result.exit_code == 0, result.output
