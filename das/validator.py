@@ -58,9 +58,13 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
         if ":Zone.Identifier" in item.name:
             continue
 
-        # Skip root-level non-corpus files (shell scripts, repo docs, etc.)
+        # Skip root-level non-corpus files (shell scripts, repo docs, etc.).
+        # Address-bearing files are corpus files and are not skipped here - they
+        # are cross-checked against the manifest in the file branch below.
         if item.parent == corpus_root and item.is_file():
-            if item.name in ROOT_SKIP_NAMES or item.suffix in ROOT_SKIP_SUFFIXES:
+            if _extract_address(item.name) is None and (
+                item.name in ROOT_SKIP_NAMES or item.suffix in ROOT_SKIP_SUFFIXES
+            ):
                 continue
 
         address = _extract_address(item.name)
@@ -88,11 +92,17 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
 
         if item.is_file():
             parent_address = _extract_address(item.parent.name)
-            if parent_address and address != parent_address:
-                errors.append(ValidationError(
-                    str(rel),
-                    f"File address '{address}' does not match "
-                    f"parent folder address '{parent_address}'",
-                ))
+            if parent_address:
+                if address != parent_address:
+                    errors.append(ValidationError(
+                        str(rel),
+                        f"File address '{address}' does not match "
+                        f"parent folder address '{parent_address}'",
+                    ))
+            else:
+                if address not in manifest.nodes:
+                    errors.append(
+                        ValidationError(str(rel), f"Address '{address}' not in manifest")
+                    )
 
     return errors

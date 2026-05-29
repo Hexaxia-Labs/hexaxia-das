@@ -127,6 +127,21 @@ def test_named_root_skips_are_skipped(corpus):
     assert errors == []
 
 
+def test_root_address_file_must_be_in_manifest(corpus):
+    # A root-level address-bearing file with no address-bearing parent folder
+    # must have its address registered in the manifest, else it is an error.
+    (corpus / "00-orphan.md").touch()
+    errors = validate_corpus(corpus)
+    assert any("not in manifest" in e.message for e in errors)
+
+
+def test_root_address_file_registered_is_valid(corpus):
+    # Once the address is registered, the same root-level file validates clean.
+    _register(corpus, "00", "Admin", "Company governance")
+    (corpus / "00-orphan.md").touch()
+    assert validate_corpus(corpus) == []
+
+
 def test_root_suffix_skip_does_not_apply_in_subfolders(corpus):
     # The root-suffix skip only applies to files whose parent IS the corpus
     # root. A .txt with no address nested in a registered folder is invalid.

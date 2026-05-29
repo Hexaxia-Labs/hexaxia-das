@@ -16,6 +16,8 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - `das add` now rejects malformed addresses (e.g. `abc`, `5`) instead of writing them to
   the manifest.
+- `das validate` now flags root-level address-bearing files whose address is not in the
+  manifest (previously passed silently).
 
 ---
 
