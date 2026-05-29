@@ -22,10 +22,6 @@ app = typer.Typer(help="Hexaxia DAS: Document Addressing Standard corpus tool")
 def init(
     corpus: str = typer.Argument(..., help="Corpus slug (e.g. hexaxia-technologies)"),
     org: Optional[str] = typer.Option(None, help="Org code (e.g. HXT)"),
-    context_type: Optional[str] = typer.Option(
-        None, help="client | project | dept | none"
-    ),
-    date_format: Optional[str] = typer.Option("YYMMDD", help="Date format"),
     tag: List[str] = typer.Option(
         [],
         "--tag",
@@ -64,8 +60,6 @@ def init(
             address_separator=".",
             manifest=MANIFEST_FILENAME,
             org=org,
-            context_type=context_type,
-            date_format=date_format,
             tags=tags,
         )
     except ValueError as e:

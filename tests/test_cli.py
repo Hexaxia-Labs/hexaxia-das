@@ -18,6 +18,13 @@ def test_init_output_names_files(tmp_path):
     assert "das.manifest.yaml" in result.output
 
 
+def test_init_rejects_removed_context_type_option(tmp_path):
+    result = runner.invoke(
+        app, ["init", "c", "--context-type", "client", "--path", str(tmp_path)]
+    )
+    assert result.exit_code != 0  # Typer exit code 2: no such option
+
+
 def test_init_with_org(tmp_path):
     runner.invoke(app, ["init", "my-corpus", "--org", "HXT", "--path", str(tmp_path)])
     from das.config import load_config

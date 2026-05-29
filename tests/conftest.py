@@ -12,8 +12,6 @@ def corpus(tmp_path):
         address_separator=".",
         manifest="das.manifest.yaml",
         org="TST",
-        context_type="client",
-        date_format="YYMMDD",
     )
     manifest = DASManifest(
         version="1.0",

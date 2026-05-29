@@ -36,8 +36,6 @@ das init CORPUS [OPTIONS]
 | Option | Default | Description |
 |---|---|---|
 | `--org TEXT` | None | Org code prepended to filenames (e.g. `HXT`). 2-5 uppercase letters. |
-| `--context-type TEXT` | None | Secondary identifier type: `client`, `project`, `dept`, or `none` |
-| `--date-format TEXT` | `YYMMDD` | Date format for filenames. `YYMMDD` is the defined format. Omit or pass empty string to exclude dates. |
 | `--tag CODE=description` | None | Tag vocabulary entry. Repeatable. Code must be 2-5 uppercase letters. Omit entirely for corpora that do not use filename tags - no `tags` block is written. |
 | `--path PATH` | `.` | Directory to initialize the corpus in |
 
@@ -56,20 +54,17 @@ das init CORPUS [OPTIONS]
 **Examples:**
 
 ```bash
-# Minimal corpus (no org code, no context type)
+# Minimal corpus (no org code)
 das init my-corpus
 
-# Full config with org and client context
-das init hexaxia-technologies --org HXT --context-type client
+# Full config with org code
+das init hexaxia-technologies --org HXT
 
 # Define a filename tag vocabulary (repeat --tag per entry)
 das init hexaxia-technologies --tag ULS="United Life Services client" --tag PN="Pax Nocturna client"
 
 # Initialize in a specific directory
 das init my-corpus --path /home/user/Documents/corpus
-
-# Exclude dates from filenames
-das init my-corpus --org HXT --date-format ""
 ```
 
 ---
