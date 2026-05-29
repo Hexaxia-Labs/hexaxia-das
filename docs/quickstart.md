@@ -38,7 +38,7 @@ Create a directory for your corpus and initialize it:
 ```bash
 mkdir ~/Documents/atlas-corpus
 cd ~/Documents/atlas-corpus
-das init atlas-technologies --org ATL --context-type client --date-format YYMMDD
+das init atlas-technologies --org ATL --tag NSL="Northstar Logistics client"
 ```
 
 This creates two files:
@@ -55,19 +55,19 @@ documents exist. Verify it looks right:
 ```yaml
 version: '1.0'
 corpus: atlas-technologies
-initialized: 2026-05-27
+initialized: '2026-05-29'
 address_separator: .
 manifest: das.manifest.yaml
 org: ATL
-context_type: client
-date_format: YYMMDD
+tags:
+  NSL: Northstar Logistics client
 ```
 
 The `version` here is the schema (file format) version `"1.0"`, distinct from the tool version
-(`0.3.0`) and the design spec version (`v0.3`). The `org` / `context_type` / `date_format` fields
-are what the current `das` CLI writes. The design spec (v0.3) has since replaced the date/context
-filename scheme with an optional `tags` vocabulary and a required `type` slug (used in Step 5
-below); the CLI does not yet emit a `tags` block, so apply tags by hand for now.
+(`0.3.0`) and the design spec version (`v0.3`). `org` is the optional org code from `--org`.
+The `tags` block is the optional vocabulary built from each `--tag CODE=description` you passed;
+codes are 2-5 uppercase letters and are the only tags `das new` will accept later. If you ran
+`das init` without any `--tag`, the `tags` block is simply omitted.
 
 ---
 
@@ -182,18 +182,33 @@ The `type` is a required slug from the controlled vocabulary in spec section 5.4
 `tags` vocabulary in `das.config.yaml`. Dates and org prefixes do not belong in filenames -
 created/modified dates live in the document passport.
 
+The recommended way to create files is `das new ADDRESS TYPE DESCRIPTOR`. It resolves the
+folder for the address, applies the naming convention for you, validates the `type` slug and
+any `--tag` against the config, and for `.md` files writes a passport stub you fill in:
+
+```bash
+# MSA for Northstar Logistics, scoped to the NSL tag from Step 1
+das new 02.01.01 contract msa --tag NSL
+
+# SOW for a Northstar security audit project (md passport stub)
+das new 02.01.01 contract sow-security-audit --tag NSL
+
+# A project deliverable
+das new 02.01.03 design network-diagram --tag NSL
+```
+
+`das new` writes a `.md` file with a passport stub by default; pass `--ext pdf` (or any other
+extension) for binary documents, which are created empty. The `--tag` must already exist in the
+config `tags` vocabulary, so the `NSL` entry added in Step 1 is what makes these calls valid.
+
+If you would rather create files by hand, name them yourself and use `touch`:
+
 ```bash
 # Articles of incorporation (internal doc - address is unambiguous, no tag)
 touch 00-Admin/00.01-Business-Registration/00.01-contract-articles-of-incorporation.pdf
 
 # MSA for Northstar Logistics (NSL tag scopes the file to the client)
 touch 02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01.01-NSL-contract-msa.pdf
-
-# SOW for a Northstar security audit project
-touch 02-Clients/02.01-Northstar-Logistics/02.01.01-Contracts/02.01.01-NSL-contract-sow-security-audit.pdf
-
-# A project deliverable
-touch 02-Clients/02.01-Northstar-Logistics/02.01.03-Projects/02.01.03-NSL-design-network-diagram.pdf
 ```
 
 Naming breakdown for `02.01.01-NSL-contract-msa.pdf`:
