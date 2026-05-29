@@ -1,15 +1,13 @@
 from __future__ import annotations
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
 from das.config import load_config, CONFIG_FILENAME
-from das.manifest import load_manifest, MANIFEST_FILENAME
-
-ADDRESS_RE = re.compile(r"^\d{2}(\.\d{2})*$")
-FILE_ADDRESS_RE = re.compile(r"^(\d{2}(\.\d{2})*)-")
-FOLDER_NAME_RE = re.compile(r"^\d{2}(\.\d{2})*-[A-Z][a-zA-Z0-9-]*$")
+from das.manifest import (
+    load_manifest, MANIFEST_FILENAME,
+    ADDRESS_RE, FILE_ADDRESS_RE, FOLDER_NAME_RE,
+)
 
 SKIP_NAMES = {
     CONFIG_FILENAME,

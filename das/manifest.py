@@ -3,11 +3,16 @@ from dataclasses import dataclass, field, fields
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+import re
 import yaml
 
 MANIFEST_FILENAME = "das.manifest.yaml"
 LEVEL_TYPES = ["area", "category", "subcategory", "context"]
 VALID_TYPES = set(LEVEL_TYPES) | {"file"}
+
+ADDRESS_RE = re.compile(r"^\d{2}(\.\d{2})*$")
+FILE_ADDRESS_RE = re.compile(r"^(\d{2}(\.\d{2})*)-")
+FOLDER_NAME_RE = re.compile(r"^\d{2}(\.\d{2})*-[A-Z][a-zA-Z0-9-]*$")
 
 
 @dataclass
@@ -55,6 +60,11 @@ def load_manifest(path: Path) -> DASManifest:
 
 
 def add_node(manifest: DASManifest, address: str, node: ManifestNode) -> None:
+    if not ADDRESS_RE.match(address):
+        raise ValueError(
+            f"Invalid address format: '{address}' "
+            "(expected two-digit segments separated by dots, e.g. '00.01')"
+        )
     if address in manifest.nodes:
         raise ValueError(f"Address '{address}' already exists in manifest")
     parent = infer_parent(address)

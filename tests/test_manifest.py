@@ -56,6 +56,14 @@ def test_add_node_sets_updated_date(corpus):
     assert manifest.updated == str(date.today())
 
 
+def test_add_node_rejects_invalid_address(corpus):
+    config = load_config(corpus)
+    manifest = load_manifest(corpus / config.manifest)
+    node = ManifestNode(label="Foo", description="bar", type="area")
+    with pytest.raises(ValueError, match="[Aa]ddress format"):
+        add_node(manifest, "abc", node)
+
+
 def test_add_node_duplicate_raises(corpus):
     config = load_config(corpus)
     manifest = load_manifest(corpus / config.manifest)

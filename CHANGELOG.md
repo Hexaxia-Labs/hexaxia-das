@@ -13,6 +13,10 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Project-local Claude Code agents (`das-engineer`, `das-operator`) and an 8-skill library
   under `.claude/`, wired to synapaxia for agent memory.
 
+### Fixed
+- `das add` now rejects malformed addresses (e.g. `abc`, `5`) instead of writing them to
+  the manifest.
+
 ---
 
 ## [0.1.0] - 2026-05-27

@@ -100,7 +100,7 @@ das add ADDRESS LABEL DESCRIPTION [OPTIONS]
 | Code | Condition |
 |---|---|
 | 0 | Node added successfully |
-| 1 | Corpus not initialized, address already exists, or parent address missing |
+| 1 | Corpus not initialized, invalid address format, address already exists, or parent address missing |
 
 **Notes:**
 
