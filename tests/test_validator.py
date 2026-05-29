@@ -84,3 +84,55 @@ def test_hidden_files_are_skipped(corpus):
     (corpus / ".DS_Store").touch()
     errors = validate_corpus(corpus)
     assert errors == []
+
+
+def test_underscore_prefixed_paths_are_skipped(corpus):
+    # Underscore-prefixed file at root, plus an underscore-prefixed folder
+    # containing a file that would otherwise be invalid. Both must be skipped.
+    (corpus / "_draft-notes.md").touch()
+    private = corpus / "_private"
+    private.mkdir()
+    (private / "no-address-here.txt").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_zone_identifier_files_are_skipped(corpus):
+    # A Windows ADS sidecar inside an otherwise-valid registered folder.
+    # The :Zone.Identifier skip must fire even though the name has no address.
+    _register(corpus, "00", "Admin", "Company governance")
+    folder = corpus / "00-Admin"
+    folder.mkdir()
+    (folder / "00-TST-some-doc.md:Zone.Identifier").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_root_repo_files_are_skipped(corpus):
+    # Root-level files with repo suffixes (.sh, .md, .txt) are skipped,
+    # even though they carry no address prefix.
+    (corpus / "setup.sh").touch()
+    (corpus / "notes.md").touch()
+    (corpus / "todo.txt").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_named_root_skips_are_skipped(corpus):
+    # The explicitly named root skips. These carry repo suffixes already,
+    # so they exercise the ROOT_SKIP_NAMES / suffix skip at root level.
+    (corpus / "GOOGLE-DRIVE-SYNC.md").touch()
+    (corpus / "drive-sync.sh").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_root_suffix_skip_does_not_apply_in_subfolders(corpus):
+    # The root-suffix skip only applies to files whose parent IS the corpus
+    # root. A .txt with no address nested in a registered folder is invalid.
+    _register(corpus, "00", "Admin", "Company governance")
+    folder = corpus / "00-Admin"
+    folder.mkdir()
+    (folder / "notes.txt").touch()
+    errors = validate_corpus(corpus)
+    assert any("No address prefix" in e.message for e in errors)
