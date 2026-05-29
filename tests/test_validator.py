@@ -84,3 +84,86 @@ def test_hidden_files_are_skipped(corpus):
     (corpus / ".DS_Store").touch()
     errors = validate_corpus(corpus)
     assert errors == []
+
+
+def test_underscore_prefixed_paths_are_skipped(corpus):
+    # Underscore-prefixed file at root, plus an underscore-prefixed folder
+    # containing a file that would otherwise be invalid. Both must be skipped.
+    (corpus / "_draft-notes.md").touch()
+    private = corpus / "_private"
+    private.mkdir()
+    (private / "no-address-here.txt").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_zone_identifier_files_are_skipped(corpus):
+    # A Windows ADS sidecar inside an otherwise-valid registered folder.
+    # The :Zone.Identifier skip must fire even though the name has no address.
+    _register(corpus, "00", "Admin", "Company governance")
+    folder = corpus / "00-Admin"
+    folder.mkdir()
+    (folder / "00-TST-some-doc.md:Zone.Identifier").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_root_repo_files_are_skipped(corpus):
+    # Root-level files with repo suffixes (.sh, .md, .txt) are skipped,
+    # even though they carry no address prefix.
+    (corpus / "setup.sh").touch()
+    (corpus / "notes.md").touch()
+    (corpus / "todo.txt").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_named_root_skips_are_skipped(corpus):
+    # The explicitly named root skips. These carry repo suffixes already,
+    # so they exercise the ROOT_SKIP_NAMES / suffix skip at root level.
+    (corpus / "GOOGLE-DRIVE-SYNC.md").touch()
+    (corpus / "drive-sync.sh").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_root_address_file_must_be_in_manifest(corpus):
+    # A root-level address-bearing file with no address-bearing parent folder
+    # must have its address registered in the manifest, else it is an error.
+    (corpus / "00-orphan.md").touch()
+    errors = validate_corpus(corpus)
+    assert any("not in manifest" in e.message for e in errors)
+
+
+def test_root_address_file_registered_is_valid(corpus):
+    # Once the address is registered, the same root-level file validates clean.
+    _register(corpus, "00", "Admin", "Company governance")
+    (corpus / "00-orphan.md").touch()
+    assert validate_corpus(corpus) == []
+
+
+def test_malformed_prefix_reports_invalid_format(corpus):
+    # A name that HAS a numeric prefix but it is malformed (not two-digit
+    # segments) should report an invalid format, not a missing prefix.
+    (corpus / "123-Weird").mkdir()
+    errors = validate_corpus(corpus)
+    assert any("invalid address format" in e.message.lower() for e in errors)
+    assert not any("No address prefix" in e.message for e in errors)
+
+
+def test_truly_unprefixed_still_reports_no_prefix(corpus):
+    # A name with no leading digit at all still reports a missing prefix.
+    (corpus / "JustText").mkdir()
+    errors = validate_corpus(corpus)
+    assert any("No address prefix" in e.message for e in errors)
+
+
+def test_root_suffix_skip_does_not_apply_in_subfolders(corpus):
+    # The root-suffix skip only applies to files whose parent IS the corpus
+    # root. A .txt with no address nested in a registered folder is invalid.
+    _register(corpus, "00", "Admin", "Company governance")
+    folder = corpus / "00-Admin"
+    folder.mkdir()
+    (folder / "notes.txt").touch()
+    errors = validate_corpus(corpus)
+    assert any("No address prefix" in e.message for e in errors)

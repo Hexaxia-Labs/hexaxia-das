@@ -87,6 +87,29 @@ def test_add_child_without_parent_exits_1(tmp_path):
     assert result.exit_code == 1
 
 
+def test_add_rejects_non_numeric_address(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["add", "abc", "Foo", "bar", "--path", str(tmp_path)])
+    assert result.exit_code == 1
+    assert "address" in result.output.lower()
+
+
+def test_add_rejects_single_digit_segment(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    result = runner.invoke(app, ["add", "5", "Foo", "bar", "--path", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_add_rejects_invalid_address_leaves_manifest_empty(tmp_path):
+    runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
+    runner.invoke(app, ["add", "abc", "Foo", "bar", "--path", str(tmp_path)])
+    from das.config import load_config
+    from das.manifest import load_manifest
+    config = load_config(tmp_path)
+    manifest = load_manifest(tmp_path / config.manifest)
+    assert manifest.nodes == {}
+
+
 def test_ls_empty_corpus(tmp_path):
     runner.invoke(app, ["init", "my-corpus", "--path", str(tmp_path)])
     result = runner.invoke(app, ["ls", "--path", str(tmp_path)])

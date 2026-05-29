@@ -100,7 +100,7 @@ das add ADDRESS LABEL DESCRIPTION [OPTIONS]
 | Code | Condition |
 |---|---|
 | 0 | Node added successfully |
-| 1 | Corpus not initialized, address already exists, or parent address missing |
+| 1 | Corpus not initialized, invalid address format, address already exists, or parent address missing |
 
 **Notes:**
 
@@ -261,6 +261,7 @@ das validate [OPTIONS]
 | Folder casing | Folder label must start with an uppercase letter (`00-Admin`, not `00-admin`) |
 | Manifest registration | Every folder's address must be registered in `das.manifest.yaml` |
 | File-to-folder match | A file's address must match its parent folder's address |
+| Root file registration | Address-bearing files at the corpus root are cross-checked against the manifest |
 
 **Skipped items:**
 

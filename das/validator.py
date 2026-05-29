@@ -1,15 +1,13 @@
 from __future__ import annotations
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
 from das.config import load_config, CONFIG_FILENAME
-from das.manifest import load_manifest, MANIFEST_FILENAME
-
-ADDRESS_RE = re.compile(r"^\d{2}(\.\d{2})*$")
-FILE_ADDRESS_RE = re.compile(r"^(\d{2}(\.\d{2})*)-")
-FOLDER_NAME_RE = re.compile(r"^\d{2}(\.\d{2})*-[A-Z][a-zA-Z0-9-]*$")
+from das.manifest import (
+    load_manifest, MANIFEST_FILENAME,
+    ADDRESS_RE, FILE_ADDRESS_RE, FOLDER_NAME_RE, LOOSE_PREFIX_RE,
+)
 
 SKIP_NAMES = {
     CONFIG_FILENAME,
@@ -60,15 +58,25 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
         if ":Zone.Identifier" in item.name:
             continue
 
-        # Skip root-level non-corpus files (shell scripts, repo docs, etc.)
+        # Skip root-level non-corpus files (shell scripts, repo docs, etc.).
+        # Address-bearing files are corpus files and are not skipped here - they
+        # are cross-checked against the manifest in the file branch below.
         if item.parent == corpus_root and item.is_file():
-            if item.name in ROOT_SKIP_NAMES or item.suffix in ROOT_SKIP_SUFFIXES:
+            if _extract_address(item.name) is None and (
+                item.name in ROOT_SKIP_NAMES or item.suffix in ROOT_SKIP_SUFFIXES
+            ):
                 continue
 
         address = _extract_address(item.name)
 
         if address is None:
-            errors.append(ValidationError(str(rel), "No address prefix found"))
+            if LOOSE_PREFIX_RE.match(item.name):
+                errors.append(ValidationError(
+                    str(rel),
+                    "Invalid address format (malformed numeric prefix)",
+                ))
+            else:
+                errors.append(ValidationError(str(rel), "No address prefix found"))
             continue
 
         if not ADDRESS_RE.match(address):
@@ -90,11 +98,17 @@ def validate_corpus(corpus_root: Path) -> List[ValidationError]:
 
         if item.is_file():
             parent_address = _extract_address(item.parent.name)
-            if parent_address and address != parent_address:
-                errors.append(ValidationError(
-                    str(rel),
-                    f"File address '{address}' does not match "
-                    f"parent folder address '{parent_address}'",
-                ))
+            if parent_address:
+                if address != parent_address:
+                    errors.append(ValidationError(
+                        str(rel),
+                        f"File address '{address}' does not match "
+                        f"parent folder address '{parent_address}'",
+                    ))
+            else:
+                if address not in manifest.nodes:
+                    errors.append(
+                        ValidationError(str(rel), f"Address '{address}' not in manifest")
+                    )
 
     return errors
