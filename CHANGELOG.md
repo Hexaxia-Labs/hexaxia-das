@@ -14,6 +14,11 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   uppercase code to a human description. Validated in `DASConfig.__post_init__`, round-trips
   through `load_config`/`write_config`, and is omitted from the file when unset. Populate at
   init with the repeatable `das init --tag CODE=description` option.
+- `das validate` now enforces the filename tag vocabulary (spec v0.3 section 5.2/5.3 rule 6):
+  when the config defines `tags`, a filename's tag (the uppercase 2-5 letter token immediately
+  after the address) must be a key in that vocabulary; an unknown tag is a `ValidationError`.
+  Enforcement is skipped entirely when no `tags` vocabulary is defined, so existing untagged
+  corpora are unaffected. Folder names are not tag-checked.
 - Project-local Claude Code agents (`das-engineer`, `das-operator`) and an 8-skill library
   under `.claude/`, wired to synapaxia for agent memory.
 

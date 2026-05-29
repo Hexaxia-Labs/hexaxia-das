@@ -266,6 +266,7 @@ das validate [OPTIONS]
 | Manifest registration | Every folder's address must be registered in `das.manifest.yaml` |
 | File-to-folder match | A file's address must match its parent folder's address |
 | Root file registration | Address-bearing files at the corpus root are cross-checked against the manifest |
+| Filename tag vocabulary | When the config defines a `tags` vocabulary, a filename's tag (the uppercase 2-5 letter token immediately after the address) must be a key in that vocabulary; an unknown tag is an error. Enforcement is skipped entirely when no `tags` vocabulary is defined. |
 
 **Skipped items:**
 

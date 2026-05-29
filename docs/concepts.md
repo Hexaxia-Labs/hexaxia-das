@@ -125,10 +125,10 @@ Fields written by `das init` today (these are the fields the `das` v0.2.0 CLI re
 > moved past the `context_type` / `date_format` filename scheme: it drops dates and the context code
 > from filenames and instead defines an optional `tags` vocabulary in the config plus a required
 > `type` slug in filenames. The `tags` config field is now **implemented** - the `das` CLI reads and
-> writes it, and `das init --tag CODE=description` populates it. The CLI does not yet validate
-> filename tags against this vocabulary in `das validate`; that remains a follow-up. Until the rest of
-> the CLI catches up to the v0.3 filename scheme, the fields above are what an initialized corpus
-> actually contains.
+> writes it, and `das init --tag CODE=description` populates it. `das validate` now enforces this
+> vocabulary: a filename tag that is not in the config `tags` is reported as an error (enforcement is
+> skipped when no vocabulary is defined). Until the rest of the CLI catches up to the v0.3 filename
+> scheme, the fields above are what an initialized corpus actually contains.
 
 **Changing this file after initialization is a breaking change.** Every filename and manifest
 entry depends on the naming format being stable. If you must change it, rename all affected files,
