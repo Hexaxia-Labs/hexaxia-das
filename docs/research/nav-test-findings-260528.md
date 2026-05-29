@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-28  
 **Author:** Aaron Lamb  
-**Corpus:** Hexaxia-Technologies-DAS (55 files)  
+**Corpus:** Hexaxia-Technologies-DAS (56 files)  
 **Test harness:** `~/Projects/das-nav-test/`  
 **Questions:** 8 navigation tasks (Q1-Q8) + 4 tag discovery tasks (D1-D4)  
 **Agent model:** claude-haiku-4-5-20251001  

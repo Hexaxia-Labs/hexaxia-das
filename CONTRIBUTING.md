@@ -109,7 +109,8 @@ The `corpus` fixture gives you a `tmp_path`-based initialized DAS corpus and a
 ## Reporting Issues
 
 Open an issue on GitHub. Include:
-- Hexaxia DAS version (`das --version` once implemented, or the git SHA)
+- Hexaxia DAS version (the package version from `pyproject.toml`, currently `0.2.0`, or the git
+  SHA - there is no `das --version` flag yet)
 - Python version (`python3 --version`)
 - The command you ran
 - The error output

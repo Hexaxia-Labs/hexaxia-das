@@ -13,6 +13,17 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Project-local Claude Code agents (`das-engineer`, `das-operator`) and an 8-skill library
   under `.claude/`, wired to synapaxia for agent memory.
 
+### Changed
+- Documentation reconciliation to remove drift from the source of truth. Clarified the three
+  independent version axes (tool/package `0.2.0`, design spec `v0.3`, on-disk schema `"1.0"`)
+  across `README.md`, `docs/concepts.md`, and `docs/quickstart.md`; bumped the stale `README.md`
+  Status from `v0.1.0` to `v0.2.0`. Updated the file naming convention in `README.md`,
+  `docs/concepts.md`, and `docs/quickstart.md` to the adopted spec v0.3 format
+  `{address}-[{TAG}-]{type}-{descriptor}.ext` with corrected examples. Documented `das.config.yaml`
+  fields as actually emitted by the CLI and flagged the spec'd-but-unimplemented `tags` field.
+  Corrected `CONTRIBUTING.md` to drop the non-existent `das --version` flag, and fixed stale
+  research cross-references (spec `v0.2` -> `v0.3`; corpus file count `55` -> `56`).
+
 ### Fixed
 - `das add` now rejects malformed addresses (e.g. `abc`, `5`) instead of writing them to
   the manifest.
