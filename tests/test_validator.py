@@ -1,11 +1,18 @@
 import pytest
 from pathlib import Path
-from das.config import load_config
+from das.config import load_config, write_config
 from das.manifest import (
     ManifestNode, load_manifest, add_node, write_manifest,
     infer_parent, infer_type,
 )
 from das.validator import validate_corpus
+
+
+def _set_tags(corpus, tags):
+    # Rewrite the corpus config with an explicit tags vocabulary.
+    config = load_config(corpus)
+    config.tags = tags
+    write_config(corpus, config)
 
 
 def _register(corpus, address, label, description):
@@ -167,3 +174,77 @@ def test_root_suffix_skip_does_not_apply_in_subfolders(corpus):
     (folder / "notes.txt").touch()
     errors = validate_corpus(corpus)
     assert any("No address prefix" in e.message for e in errors)
+
+
+def test_known_filename_tag_is_valid(corpus):
+    # A file carrying a tag that is in the config vocabulary validates clean.
+    _set_tags(corpus, {"ULS": "Unilever Solutions"})
+    _register(corpus, "00", "Admin", "Company governance")
+    _register(corpus, "00.01", "Sub", "Subcategory")
+    _register(corpus, "00.01.04", "Leaf", "Leaf folder")
+    folder = corpus / "00-Admin" / "00.01-Sub" / "00.01.04-Leaf"
+    folder.mkdir(parents=True)
+    (folder / "00.01.04-ULS-runbook-foo.md").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_unknown_filename_tag_is_invalid(corpus):
+    # A file carrying a tag NOT in the config vocabulary is an error.
+    _set_tags(corpus, {"ULS": "Unilever Solutions"})
+    _register(corpus, "00", "Admin", "Company governance")
+    _register(corpus, "00.01", "Sub", "Subcategory")
+    _register(corpus, "00.01.04", "Leaf", "Leaf folder")
+    folder = corpus / "00-Admin" / "00.01-Sub" / "00.01.04-Leaf"
+    folder.mkdir(parents=True)
+    (folder / "00.01.04-XYZ-runbook-foo.md").touch()
+    errors = validate_corpus(corpus)
+    assert any("Unknown tag 'XYZ'" in e.message for e in errors)
+
+
+def test_file_without_tag_is_not_tag_checked(corpus):
+    # A file whose first post-address token is a lowercase type slug carries
+    # no tag and must not raise a tag error, even with a vocabulary defined.
+    _set_tags(corpus, {"ULS": "Unilever Solutions"})
+    _register(corpus, "00", "Admin", "Company governance")
+    _register(corpus, "00.01", "Sub", "Subcategory")
+    _register(corpus, "00.01.04", "Leaf", "Leaf folder")
+    folder = corpus / "00-Admin" / "00.01-Sub" / "00.01.04-Leaf"
+    folder.mkdir(parents=True)
+    (folder / "00.01.04-runbook-foo.md").touch()
+    errors = validate_corpus(corpus)
+    assert not any("Unknown tag" in e.message for e in errors)
+
+
+def test_tag_enforcement_off_when_no_vocabulary(corpus):
+    # The default fixture config has no tags vocabulary. A tagged file must
+    # NOT be flagged - there is nothing to be unknown against.
+    _register(corpus, "00", "Admin", "Company governance")
+    _register(corpus, "00.01", "Sub", "Subcategory")
+    _register(corpus, "00.01.04", "Leaf", "Leaf folder")
+    folder = corpus / "00-Admin" / "00.01-Sub" / "00.01.04-Leaf"
+    folder.mkdir(parents=True)
+    (folder / "00.01.04-ULS-runbook-foo.md").touch()
+    errors = validate_corpus(corpus)
+    assert errors == []
+
+
+def test_type_slug_is_not_mistaken_for_tag(corpus):
+    # 'contract' is a lowercase type slug, not a tag, so no tag check applies.
+    _set_tags(corpus, {"ULS": "Unilever Solutions"})
+    _register(corpus, "00", "Admin", "Company governance")
+    folder = corpus / "00-Admin"
+    folder.mkdir()
+    (folder / "00-contract-msa.pdf").touch()
+    errors = validate_corpus(corpus)
+    assert not any("Unknown tag" in e.message for e in errors)
+
+
+def test_folder_with_uppercase_label_is_not_tag_checked(corpus):
+    # Folders carry no tag. An uppercase-looking label component must never
+    # trigger a tag error even when a vocabulary is defined.
+    _set_tags(corpus, {"ULS": "Unilever Solutions"})
+    _register(corpus, "00", "ABC", "Folder whose label looks like a tag")
+    (corpus / "00-ABC").mkdir()
+    errors = validate_corpus(corpus)
+    assert not any("Unknown tag" in e.message for e in errors)
