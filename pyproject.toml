@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hexaxia-das"
+version = "0.4.0"
+description = "Hexaxia DAS - Document Addressing Standard corpus tool"
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.12",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+das = "das.cli:app"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+dist/
+
+# Internal-only - never publish to the public repo
+.claude/
+.memory/
+docs/visuals/
+docs/research/
+docs/superpowers/
+RELEASE-CHECKLIST.md
