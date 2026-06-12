@@ -139,6 +139,12 @@ deferred to later versions:
 
 ---
 
+## On the word "standard"
+
+A standard is conferred by the people who adopt it, not declared by the person who wrote it. Today DAS is an open convention and a reference CLI that I run across more than a dozen of my own corpora. It becomes a standard the day someone outside Hexaxia adopts it on theirs. If that is you, open an issue. I would rather earn the word than claim it.
+
+---
+
 ## License
 
 Apache 2.0 - see [LICENSE](LICENSE) for details.
